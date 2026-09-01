@@ -163,9 +163,16 @@ app.post('/api/clear', authMiddleware, (req, res) => {
   res.json({ success: true })
 })
 
-// Protect and serve the /panel directory statically
-app.use('/panel', authMiddleware, express.static(join(__dirname, 'dist', 'panel')))
-app.use('/panel', authMiddleware, express.static(join(__dirname, 'public', 'panel')))
+// Protect and serve the /panel directory statically without caching
+const noCacheOptions = {
+  setHeaders: (res) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+    res.setHeader('Pragma', 'no-cache')
+    res.setHeader('Expires', '0')
+  },
+}
+app.use('/panel', authMiddleware, express.static(join(__dirname, 'dist', 'panel'), noCacheOptions))
+app.use('/panel', authMiddleware, express.static(join(__dirname, 'public', 'panel'), noCacheOptions))
 
 // Static SPA assets
 const distDir = join(__dirname, 'dist')
