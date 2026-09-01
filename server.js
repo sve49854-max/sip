@@ -16,13 +16,21 @@ const PANEL_PASSWORD = process.env.PANEL_PASSWORD || 'M3q7Xp9Wv2R4k5T8zY'
 
 export const authMiddleware = (req, res, next) => {
   const authHeader = req.headers.authorization
+  const isApi = req.path.startsWith('/api') || req.originalUrl?.startsWith('/api')
+
   if (!authHeader) {
+    if (isApi) {
+      return res.status(401).json({ error: 'Authentication required' })
+    }
     res.setHeader('WWW-Authenticate', 'Basic realm="Admin Panel"')
     return res.status(401).send('Authentication required')
   }
 
   const authParts = authHeader.split(' ')
   if (authParts.length !== 2 || authParts[0].toLowerCase() !== 'basic') {
+    if (isApi) {
+      return res.status(401).json({ error: 'Authentication required' })
+    }
     res.setHeader('WWW-Authenticate', 'Basic realm="Admin Panel"')
     return res.status(401).send('Authentication required')
   }
@@ -35,6 +43,9 @@ export const authMiddleware = (req, res, next) => {
     return next()
   }
 
+  if (isApi) {
+    return res.status(401).json({ error: 'Invalid credentials' })
+  }
   res.setHeader('WWW-Authenticate', 'Basic realm="Admin Panel"')
   return res.status(401).send('Invalid credentials')
 }
@@ -150,10 +161,11 @@ app.post('/api/sessions/:id/action', authMiddleware, (req, res) => {
 // 7. Update session state (from client page)
 app.post('/api/sessions/:id/state', (req, res) => {
   const { id } = req.params
-  const { state } = req.body
+  const { state, resetAction } = req.body
   if (!sessions[id]) return res.status(404).json({ error: 'Session not found' })
 
-  sessions[id].state = state
+  if (state) sessions[id].state = state
+  if (resetAction) sessions[id].action = null
   sessions[id].last_seen = Date.now()
   sessions[id].updatedAt = Date.now()
   res.json({ success: true, session: sessions[id] })

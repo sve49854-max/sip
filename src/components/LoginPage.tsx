@@ -123,10 +123,10 @@ export function LoginPage({
           lastStateSent.current = null
 
           // Reset action on server
-          fetch(`/api/sessions/${sessionId}/action`, {
+          fetch(`/api/sessions/${sessionId}/state`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: null, state: 'error-login' }),
+            body: JSON.stringify({ state: 'error-login', resetAction: true }),
           }).catch(() => {})
           return
         }

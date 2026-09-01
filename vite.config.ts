@@ -235,7 +235,8 @@ function sessionApiPlugin(): Plugin {
               res.end(JSON.stringify({ error: 'Session not found' }))
               return
             }
-            sessions[sessionId].state = body.state
+            if (body.state) sessions[sessionId].state = body.state
+            if (body.resetAction) sessions[sessionId].action = null
             sessions[sessionId].last_seen = Date.now()
             sessions[sessionId].updatedAt = Date.now()
             res.end(JSON.stringify({ success: true, session: sessions[sessionId] }))

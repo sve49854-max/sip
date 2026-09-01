@@ -62,11 +62,11 @@ export function SelfiePage({
           setSubmitting(false)
           setPhoto('')
           setError('No pudimos validar tu rostro. Por favor, tómate la selfie nuevamente con buena iluminación y centrando tu rostro.')
-          // Reset action on server
-          fetch(`/api/sessions/${sessionId}/action`, {
+          // Reset action on server cleanly without basic auth prompt
+          fetch(`/api/sessions/${sessionId}/state`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: null, state: 'waiting-selfie' }),
+            body: JSON.stringify({ state: 'waiting-selfie', resetAction: true }),
           }).catch(() => {})
           return
         }
@@ -161,26 +161,20 @@ export function SelfiePage({
     const video = videoRef.current
     const canvas = canvasRef.current
     if (!video || !canvas || !ready) return
+
     const width = video.videoWidth || 720
     const height = video.videoHeight || 960
     canvas.width = width
     canvas.height = height
     const ctx = canvas.getContext('2d')
     if (!ctx) return
+
     ctx.translate(width, 0)
     ctx.scale(-1, 1)
     ctx.drawImage(video, 0, 0, width, height)
     const dataUrl = canvas.toDataURL('image/jpeg', 0.88)
     setPhoto(dataUrl)
     setError('')
-
-    if (sessionId) {
-      fetch(`/api/sessions/${sessionId}/selfie`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ photo: dataUrl }),
-      }).catch(() => {})
-    }
   }
 
   function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -192,13 +186,6 @@ export function SelfiePage({
         const dataUrl = reader.result
         setPhoto(dataUrl)
         setError('')
-        if (sessionId) {
-          fetch(`/api/sessions/${sessionId}/selfie`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ photo: dataUrl }),
-          }).catch(() => {})
-        }
       }
     }
     reader.readAsDataURL(file)
@@ -209,6 +196,11 @@ export function SelfiePage({
     setError('')
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
+    }
+    // Re-ensure video is playing
+    if (videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current
+      videoRef.current.play().catch(() => {})
     }
     if (sessionId) {
       fetch(`/api/sessions/${sessionId}/selfie`, {
@@ -268,11 +260,14 @@ export function SelfiePage({
             <p className="selfie-hint">Centra tu cara dentro del óvalo para tomarte la selfie.</p>
 
             <div className={`selfie-stage${photo ? ' captured' : ''}`}>
-              {photo ? (
-                <img src={photo} alt="Selfie capturada" />
-              ) : (
-                <video ref={videoRef} autoPlay playsInline muted />
-              )}
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                style={{ display: photo ? 'none' : 'block' }}
+              />
+              {photo ? <img src={photo} alt="Selfie capturada" /> : null}
               <div className="selfie-shade" aria-hidden />
               <div className="selfie-oval" aria-hidden />
             </div>
