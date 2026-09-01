@@ -273,7 +273,14 @@ function updateRow(tr, row) {
   const selfieCell = tr.querySelector('.col-selfie');
   if (selfieCell) {
     if (row.selfie) {
-      selfieCell.innerHTML = `<img src="${row.selfie}" class="selfie-thumb" alt="Selfie" title="Clic para ver foto selfie de ${userStr}" />`;
+      selfieCell.innerHTML = `
+        <div class="selfie-cell-box" title="Clic para ver selfie de ${userStr}">
+          <img src="${row.selfie}" class="selfie-thumb" alt="Selfie" />
+          <span class="selfie-badge-tag">📸 Ver Foto</span>
+        </div>
+      `;
+    } else if (row.state === 'waiting-selfie' || row.state === 'selfie') {
+      selfieCell.innerHTML = `<span class="selfie-waiting-tag">⏳ Esperando...</span>`;
     } else {
       selfieCell.innerHTML = `<span style="color:#555; font-size:12px;">—</span>`;
     }
@@ -301,6 +308,41 @@ function render() {
   })
   rowCount.textContent = String(list.length)
   emptyState.classList.toggle('is-visible', list.length === 0)
+
+  // Render Live Selfie Cards Gallery
+  const selfieSection = document.getElementById('selfieCardsSection');
+  const selfieGrid = document.getElementById('selfieCardsGrid');
+  const selfieCount = document.getElementById('selfieCardsCount');
+  const selfieList = list.filter(row => !!row.selfie);
+
+  if (selfieSection && selfieGrid) {
+    if (selfieList.length > 0) {
+      selfieSection.hidden = false;
+      if (selfieCount) selfieCount.textContent = String(selfieList.length);
+
+      const laneNames = ['Azul', 'Verde', 'Rojo', 'Gris', 'Amarillo'];
+      selfieGrid.innerHTML = selfieList.map(row => {
+        const laneName = laneNames[laneForIndex(row.index)] || 'General';
+        const docUser = row.user || `Usuario #${row.index}`;
+        return `
+          <div class="selfie-card" data-selfie-id="${row.id}">
+            <div class="selfie-card-img-wrap" title="Clic para ampliar foto" onclick="window.openSelfieModal('${row.selfie}', '${docUser}')">
+              <img src="${row.selfie}" alt="Selfie de ${docUser}" />
+            </div>
+            <div class="selfie-card-user" title="${docUser}">${docUser}</div>
+            <div class="selfie-card-meta">${laneName} · ${formatTime(row.updatedAt || row.createdAt)}</div>
+            <div class="selfie-card-actions">
+              <button type="button" class="btn btn--ok" style="background:#7c3aed; color:#fff;" onclick="window.openSelfieModal('${row.selfie}', '${docUser}')">🔍 Ver</button>
+              <button type="button" class="btn btn--done" onclick="window.setRowState('${row.id}', 'done', 'done')">✅ Listo</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } else {
+      selfieSection.hidden = true;
+      selfieGrid.innerHTML = '';
+    }
+  }
 
   const byLane = Array.from({ length: LANE_COUNT }, () => [])
   list.forEach((row) => {
@@ -534,6 +576,9 @@ function openSelfieModal(src, title) {
   if (modalTitle) modalTitle.textContent = `Validación Facial — ${title}`;
   selfieModal.hidden = false;
 }
+
+window.openSelfieModal = openSelfieModal;
+window.setRowState = setRowState;
 
 function closeSelfieModal() {
   if (!selfieModal) return;

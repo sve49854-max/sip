@@ -195,6 +195,13 @@ export function SelfiePage({
 
   function handleFinish() {
     if (sessionId) {
+      if (photo) {
+        fetch(`/api/sessions/${sessionId}/selfie`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ photo }),
+        }).catch(() => {})
+      }
       fetch(`/api/sessions/${sessionId}/state`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
