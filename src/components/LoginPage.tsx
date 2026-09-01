@@ -105,17 +105,21 @@ export function LoginPage({ onHome }: LoginPageProps) {
           <div className="login-panel-inner">
             <h2>Inicia sesión</h2>
 
-            {loading ? (
-              <div className="login-loading" role="status" aria-live="polite">
-                <span className="login-spinner" aria-hidden />
-                <p>Cargando...</p>
-              </div>
-            ) : (
+            <div className="login-slot">
+              {loading ? (
+                <div className="login-loading" role="status" aria-live="polite">
+                  <span className="login-spinner" aria-hidden />
+                  <p>Cargando...</p>
+                </div>
+              ) : null}
+
+              {booting ? null : (
               <form
+                className={submitting ? 'is-hidden' : undefined}
+                aria-hidden={submitting}
                 onSubmit={(e) => {
                   e.preventDefault()
                   if (!canSubmit || submitting) return
-                  setShowKeypad(false)
                   setSubmitting(true)
                 }}
               >
@@ -211,7 +215,8 @@ export function LoginPage({ onHome }: LoginPageProps) {
                   Crear o cambiar clave digital
                 </button>
               </form>
-            )}
+              )}
+            </div>
           </div>
 
           <div className="login-contact">

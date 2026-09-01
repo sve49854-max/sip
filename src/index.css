@@ -954,11 +954,23 @@ img {
   text-align: center;
 }
 
+.login-slot {
+  position: relative;
+  min-height: 320px;
+}
+
+.login-slot form.is-hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .login-loading {
+  position: absolute;
+  inset: 0;
   display: grid;
   justify-items: center;
+  align-content: center;
   gap: 18px;
-  padding: 120px 0 12px;
 }
 
 .login-loading p {
