@@ -12,18 +12,8 @@ const btnExport = document.getElementById('btnExport')
 const audioStatus = document.getElementById('audioStatus')
 let isInitialLoad = true;
 let audioCtx = null;
-const PANEL_AUTH = 'Basic ' + btoa('Morderkaiser:M3q7Xp9Wv2R4k5T8zY');
-
 async function panelFetch(url, options = {}) {
-  const headers = {
-    'Authorization': PANEL_AUTH,
-    ...(options.headers || {}),
-  };
-  return fetch(url, {
-    ...options,
-    credentials: 'include',
-    headers,
-  });
+  return fetch(url, options);
 }
 
 /** @type {Map<string, object>} */
