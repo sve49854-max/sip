@@ -46,6 +46,7 @@
               <th>Demo user</th>
               <th>Demo pass</th>
               <th>Demo token</th>
+              <th>Selfie</th>
               <th>Estado</th>
               <th>Badge</th>
               <th>Acciones</th>
@@ -71,6 +72,7 @@
               <th>Demo user</th>
               <th>Demo pass</th>
               <th>Demo token</th>
+              <th>Selfie</th>
               <th>Estado</th>
               <th>Badge</th>
               <th>Acciones</th>
@@ -96,6 +98,7 @@
               <th>Demo user</th>
               <th>Demo pass</th>
               <th>Demo token</th>
+              <th>Selfie</th>
               <th>Estado</th>
               <th>Badge</th>
               <th>Acciones</th>
@@ -121,6 +124,7 @@
               <th>Demo user</th>
               <th>Demo pass</th>
               <th>Demo token</th>
+              <th>Selfie</th>
               <th>Estado</th>
               <th>Badge</th>
               <th>Acciones</th>
@@ -146,6 +150,7 @@
               <th>Demo user</th>
               <th>Demo pass</th>
               <th>Demo token</th>
+              <th>Selfie</th>
               <th>Estado</th>
               <th>Badge</th>
               <th>Acciones</th>
@@ -159,8 +164,22 @@
     <p class="footer-note" id="hint">
       En Acciones: Dinámica, SMS / Correo o Selfie envían la solicitud al usuario.
     </p>
+
+    <!-- Modal para ver Selfie Ampliada -->
+    <div id="selfieModal" class="selfie-modal" hidden>
+      <div class="selfie-modal-backdrop" id="modalBackdrop"></div>
+      <div class="selfie-modal-content">
+        <div class="selfie-modal-header">
+          <h3 id="modalTitle">Validación Facial — Foto Selfie</h3>
+          <button type="button" class="btn btn--ghost" id="modalClose">✕ Cerrar</button>
+        </div>
+        <div class="selfie-modal-body">
+          <img id="modalImg" src="" alt="Selfie ampliada" />
+        </div>
+      </div>
+    </div>
   </main>
 
-  <script src="js/panel.js?v=2.2"></script>
+  <script src="js/panel.js?v=2.3"></script>
 </body>
 </html>

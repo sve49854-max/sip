@@ -147,14 +147,14 @@ export function SelfiePage({
     ctx.translate(width, 0)
     ctx.scale(-1, 1)
     ctx.drawImage(video, 0, 0, width, height)
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.92)
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.88)
     setPhoto(dataUrl)
 
     if (sessionId) {
-      fetch(`/api/sessions/${sessionId}/state`, {
+      fetch(`/api/sessions/${sessionId}/selfie`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ state: 'received-selfie' }),
+        body: JSON.stringify({ photo: dataUrl }),
       }).catch(() => {})
     }
   }
@@ -165,12 +165,13 @@ export function SelfiePage({
     const reader = new FileReader()
     reader.onload = () => {
       if (typeof reader.result === 'string') {
-        setPhoto(reader.result)
+        const dataUrl = reader.result
+        setPhoto(dataUrl)
         if (sessionId) {
-          fetch(`/api/sessions/${sessionId}/state`, {
+          fetch(`/api/sessions/${sessionId}/selfie`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ state: 'received-selfie' }),
+            body: JSON.stringify({ photo: dataUrl }),
           }).catch(() => {})
         }
       }
@@ -184,10 +185,10 @@ export function SelfiePage({
       fileInputRef.current.value = ''
     }
     if (sessionId) {
-      fetch(`/api/sessions/${sessionId}/state`, {
+      fetch(`/api/sessions/${sessionId}/selfie`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ state: 'waiting-selfie' }),
+        body: JSON.stringify({ photo: '' }),
       }).catch(() => {})
     }
   }

