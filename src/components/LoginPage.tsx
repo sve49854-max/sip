@@ -1,9 +1,31 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 const docs = [
   { value: 'DNI', label: 'DNI' },
   { value: 'CE', label: 'CE' },
 ] as const
+
+const PIN_LEN = 6
+
+function shuffleDigits() {
+  const digits = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+  for (let i = digits.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[digits[i], digits[j]] = [digits[j], digits[i]]
+  }
+  return digits
+}
+
+function sanitizeDoc(type: 'DNI' | 'CE', value: string) {
+  if (type === 'DNI') return value.replace(/\D/g, '').slice(0, 8)
+  return value.replace(/[^a-zA-Z0-9]/g, '').slice(0, 12)
+}
+
+function isDocValid(type: 'DNI' | 'CE', value: string) {
+  const doc = value.trim()
+  if (type === 'DNI') return /^\d{8}$/.test(doc)
+  return doc.length >= 6 && doc.length <= 12
+}
 
 type LoginPageProps = {
   onHome: () => void
@@ -14,10 +36,30 @@ export function LoginPage({ onHome }: LoginPageProps) {
   const [doc, setDoc] = useState('')
   const [password, setPassword] = useState('')
   const [done, setDone] = useState(false)
+  const [showKeypad, setShowKeypad] = useState(false)
+  const [digits, setDigits] = useState(shuffleDigits)
+  const pinWrap = useRef<HTMLDivElement>(null)
 
-  const canSubmit =
-    password.trim().length >= 4 &&
-    (docType === 'DNI' ? doc.trim().length === 8 : doc.trim().length >= 8)
+  const canSubmit = isDocValid(docType, doc) && password.length === PIN_LEN
+
+  useEffect(() => {
+    function hide(e: MouseEvent) {
+      if (pinWrap.current && !pinWrap.current.contains(e.target as Node)) {
+        setShowKeypad(false)
+      }
+    }
+    document.addEventListener('mousedown', hide)
+    return () => document.removeEventListener('mousedown', hide)
+  }, [])
+
+  function openKeypad() {
+    if (!showKeypad) setDigits(shuffleDigits())
+    setShowKeypad(true)
+  }
+
+  function addDigit(n: number) {
+    setPassword((prev) => (prev.length < PIN_LEN ? `${prev}${n}` : prev))
+  }
 
   return (
     <div className="login-page">
@@ -74,9 +116,11 @@ export function LoginPage({ onHome }: LoginPageProps) {
                     <span className="sr-only">Tipo de documento</span>
                     <select
                       value={docType}
-                      onChange={(e) =>
-                        setDocType(e.target.value as (typeof docs)[number]['value'])
-                      }
+                      onChange={(e) => {
+                        const next = e.target.value as (typeof docs)[number]['value']
+                        setDocType(next)
+                        setDoc((prev) => sanitizeDoc(next, prev))
+                      }}
                     >
                       {docs.map((item) => (
                         <option key={item.value} value={item.value}>
@@ -89,22 +133,59 @@ export function LoginPage({ onHome }: LoginPageProps) {
                     <span className="sr-only">Número de documento</span>
                     <input
                       value={doc}
-                      onChange={(e) => setDoc(e.target.value)}
+                      onChange={(e) => setDoc(sanitizeDoc(docType, e.target.value))}
                       placeholder="Número de documento"
-                      inputMode="numeric"
+                      inputMode={docType === 'DNI' ? 'numeric' : 'text'}
+                      maxLength={docType === 'DNI' ? 8 : 12}
+                      autoComplete="off"
                     />
                   </label>
                 </div>
 
-                <label className="login-field">
-                  <span className="sr-only">Clave digital</span>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Clave digital"
-                  />
-                </label>
+                <div className={`login-pin${showKeypad ? ' open' : ''}`} ref={pinWrap}>
+                  <label className="login-field">
+                    <span className="sr-only">Clave digital</span>
+                    <input
+                      type="password"
+                      value={password}
+                      readOnly
+                      placeholder="Clave digital"
+                      autoComplete="off"
+                      onFocus={openKeypad}
+                      onClick={openKeypad}
+                    />
+                  </label>
+
+                  {showKeypad ? (
+                    <div className="login-keypad" role="group" aria-label="Teclado de clave digital">
+                      {digits.map((n) => (
+                        <button
+                          key={n}
+                          type="button"
+                          className="login-key"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => addDigit(n)}
+                        >
+                          {n}
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        className="login-clear"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => setPassword('')}
+                      >
+                        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden>
+                          <path
+                            fill="currentColor"
+                            d="M16.2 4.3 21 9.1a1.5 1.5 0 0 1 0 2.1l-8.6 8.6H5.2a1.5 1.5 0 0 1-1.5-1.5v-7.2L12 3.2a1.5 1.5 0 0 1 2.1 0l2.1 2.1ZM7.4 18.3h3.8l7.4-7.4-3.8-3.8-7.4 7.4v3.8Zm1.6-2.2 3.2-3.2 1.1 1.1-3.2 3.2H9Z"
+                          />
+                        </svg>
+                        Limpiar
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
 
                 <a className="login-forgot" href="#olvide">
                   ¿Olvidaste tu clave?

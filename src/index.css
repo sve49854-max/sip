@@ -994,6 +994,63 @@ img {
   padding-right: 28px;
 }
 
+.login-pin {
+  margin-bottom: 4px;
+}
+
+.login-pin.open input {
+  background: #fff;
+  box-shadow: inset 0 0 0 1.5px var(--sip-blue);
+}
+
+.login-keypad {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin: 12px 0 4px;
+}
+
+.login-key {
+  height: 46px;
+  border: 0;
+  border-radius: 8px;
+  background: #4a4d55;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.login-key:hover,
+.login-clear:hover {
+  background: #3d4048;
+}
+
+.login-key:active,
+.login-clear:active {
+  background: #32353c;
+}
+
+.login-clear {
+  grid-column: 1 / -1;
+  justify-self: center;
+  min-width: 150px;
+  height: 44px;
+  margin-top: 2px;
+  padding: 0 28px;
+  border: 0;
+  border-radius: 22px;
+  background: #4a4d55;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
 .login-forgot {
   display: block;
   text-align: right;
