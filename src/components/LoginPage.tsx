@@ -39,13 +39,15 @@ export function LoginPage({ onHome }: LoginPageProps) {
   const [done, setDone] = useState(false)
   const [showKeypad, setShowKeypad] = useState(false)
   const [digits, setDigits] = useState(shuffleDigits)
-  const [loading, setLoading] = useState(true)
+  const [booting, setBooting] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
   const pinWrap = useRef<HTMLDivElement>(null)
 
+  const loading = booting || submitting
   const canSubmit = isDocValid(docType, doc) && password.length === PIN_LEN
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setLoading(false), 1200)
+    const timer = window.setTimeout(() => setBooting(false), 1200)
     return () => window.clearTimeout(timer)
   }, [])
 
@@ -120,7 +122,13 @@ export function LoginPage({ onHome }: LoginPageProps) {
               <form
                 onSubmit={(e) => {
                   e.preventDefault()
-                  if (canSubmit) setDone(true)
+                  if (!canSubmit || submitting) return
+                  setShowKeypad(false)
+                  setSubmitting(true)
+                  window.setTimeout(() => {
+                    setSubmitting(false)
+                    setDone(true)
+                  }, 1400)
                 }}
               >
                 <div className="login-row">
