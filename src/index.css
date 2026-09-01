@@ -10,8 +10,8 @@
   --sip-circle: #ececec;
   --white: #ffffff;
   --shadow: 0 16px 40px rgba(27, 27, 29, 0.1);
-  --radius-pill: 999px;
-  --container: 1440px;
+  --radius-btn: 8px;
+  --container: 1280px;
   --header-offset: 107px;
   font-family: 'Poppins', sans-serif;
   color: var(--sip-ink);
@@ -203,7 +203,7 @@ img {
   border: 0;
   cursor: pointer;
   font-weight: 700;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-btn);
   transition: 0.18s ease;
 }
 
