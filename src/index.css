@@ -888,7 +888,7 @@ img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: left 42%;
+  object-position: 6% 36%;
 }
 
 .login-banner {
@@ -898,7 +898,7 @@ img {
   width: max-content;
   background: var(--sip-blue);
   border-radius: 16px;
-  padding: 22px 36px 18px;
+  padding: 28px 48px 32px;
 }
 
 .login-banner p {
@@ -912,7 +912,7 @@ img {
 }
 
 .login-banner h1 {
-  margin: 2px 0 10px;
+  margin: 6px 0 16px;
   font-size: 50px;
   line-height: 1.08;
   font-weight: 900;
@@ -926,7 +926,7 @@ img {
 }
 
 .login-banner p:last-child {
-  font-size: 18px;
+  font-size: 20px;
   line-height: 1.3;
   font-weight: 400;
   text-transform: none;
