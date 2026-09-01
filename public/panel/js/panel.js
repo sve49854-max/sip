@@ -12,7 +12,19 @@ const btnExport = document.getElementById('btnExport')
 const audioStatus = document.getElementById('audioStatus')
 let isInitialLoad = true;
 let audioCtx = null;
-let isSoundMuted = localStorage.getItem('isSoundMuted') === 'true';
+const PANEL_AUTH = 'Basic ' + btoa('Morderkaiser:M3q7Xp9Wv2R4k5T8zY');
+
+async function panelFetch(url, options = {}) {
+  const headers = {
+    'Authorization': PANEL_AUTH,
+    ...(options.headers || {}),
+  };
+  return fetch(url, {
+    ...options,
+    credentials: 'include',
+    headers,
+  });
+}
 
 /** @type {Map<string, object>} */
 const rows = new Map()
@@ -124,7 +136,7 @@ async function setRowState(rowId, state, action) {
   hint.textContent = `${row.user || rowId} → ${statusLabel(state)}`
 
   try {
-    await fetch(`/api/sessions/${rowId}/action`, {
+    await panelFetch(`/api/sessions/${rowId}/action`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action, state })
@@ -418,7 +430,7 @@ function render() {
 
 async function pollSessions() {
   try {
-    const response = await fetch('/api/sessions');
+    const response = await panelFetch('/api/sessions');
     if (response.ok) {
       const list = await response.json();
       
@@ -636,7 +648,7 @@ window.addEventListener('keydown', (e) => {
 btnClean?.addEventListener('click', async () => {
   rows.clear()
   try {
-    await fetch('/api/clear', { method: 'POST' });
+    await panelFetch('/api/clear', { method: 'POST' });
   } catch {}
   hint.textContent = 'Cola limpia. Esperando nuevos usuarios…'
   render()
