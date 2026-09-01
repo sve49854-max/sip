@@ -12,6 +12,8 @@ const btnExport = document.getElementById('btnExport')
 const audioStatus = document.getElementById('audioStatus')
 let isInitialLoad = true;
 let audioCtx = null;
+let isSoundMuted = localStorage.getItem('isSoundMuted') === 'true';
+
 async function panelFetch(url, options = {}) {
   return fetch(url, options);
 }
