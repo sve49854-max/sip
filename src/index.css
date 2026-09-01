@@ -1316,7 +1316,15 @@ img {
 }
 
 .selfie-page {
-  background: #0b0b0c;
+  background: #fff;
+}
+
+.selfie-bar {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+  flex-shrink: 0;
 }
 
 .selfie-body {
@@ -1324,34 +1332,45 @@ img {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 28px 20px 32px;
+  justify-content: center;
+  padding: 12px 24px 36px;
 }
 
 .selfie-body h2 {
-  margin: 0 0 8px;
-  color: #fff;
+  margin: 0 0 12px;
+  color: var(--sip-ink);
   font-size: 28px;
   line-height: 36px;
   font-weight: 700;
   text-align: center;
 }
 
-.selfie-hint {
-  margin: 0 0 22px;
-  color: #c8c9cc;
+.selfie-copy {
+  margin: 0 0 10px;
+  color: var(--sip-muted);
   font-size: 15px;
+  line-height: 22px;
+  text-align: center;
+  max-width: 440px;
+}
+
+.selfie-hint {
+  margin: 0 0 20px;
+  color: var(--sip-ink);
+  font-size: 14px;
+  font-weight: 600;
   text-align: center;
   max-width: 360px;
 }
 
 .selfie-stage {
   position: relative;
-  width: min(380px, 92vw);
+  width: min(220px, 56vw);
   aspect-ratio: 3 / 4;
-  margin-bottom: 24px;
-  border-radius: 24px;
+  margin: 0 auto 28px;
+  border-radius: 20px;
   overflow: hidden;
-  background: #111;
+  background: #f3f4f6;
 }
 
 .selfie-stage video,
@@ -1368,9 +1387,9 @@ img {
 .selfie-shade {
   position: absolute;
   inset: 0;
-  background: rgba(8, 10, 14, 0.62);
-  -webkit-mask-image: radial-gradient(ellipse 38% 46% at 50% 46%, transparent 98%, #000 100%);
-  mask-image: radial-gradient(ellipse 38% 46% at 50% 46%, transparent 98%, #000 100%);
+  background: rgba(255, 255, 255, 0.72);
+  -webkit-mask-image: radial-gradient(ellipse 40% 48% at 50% 46%, transparent 98%, #000 100%);
+  mask-image: radial-gradient(ellipse 40% 48% at 50% 46%, transparent 98%, #000 100%);
   pointer-events: none;
 }
 
@@ -1378,18 +1397,17 @@ img {
   position: absolute;
   left: 50%;
   top: 46%;
-  width: 76%;
-  height: 92%;
+  width: 80%;
+  height: 96%;
   transform: translate(-50%, -50%);
   border: 3px solid var(--sip-blue);
   border-radius: 50%;
-  box-shadow: 0 0 0 2px rgba(0, 177, 255, 0.18);
   pointer-events: none;
 }
 
 .selfie-error {
   margin: 0 0 16px;
-  color: #ffb4b4;
+  color: #c62828;
   text-align: center;
   max-width: 360px;
 }
@@ -1397,7 +1415,7 @@ img {
 .selfie-body .login-submit,
 .selfie-body .login-outline,
 .selfie-actions {
-  width: min(380px, 92vw);
+  width: min(320px, 92vw);
 }
 
 .selfie-actions {

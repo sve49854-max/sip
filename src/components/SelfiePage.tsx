@@ -71,14 +71,18 @@ export function SelfiePage({ onHome }: SelfiePageProps) {
 
   return (
     <div className="login-page selfie-page">
-      <header className="login-top">
+      <header className="selfie-bar">
         <button type="button" className="login-logo" onClick={onHome} aria-label="Sip">
-          <SipLogo />
+          <SipLogo ink />
         </button>
       </header>
 
       <div className="selfie-body">
         <h2>Validación facial</h2>
+        <p className="selfie-copy">
+          Esta validación nos ayudará a realizar la verificación facial cuando detectemos que
+          inicia sesión en un dispositivo desconocido.
+        </p>
         <p className="selfie-hint">Centra tu cara dentro del óvalo para tomarte la selfie.</p>
 
         <div className={`selfie-stage${photo ? ' captured' : ''}`}>
