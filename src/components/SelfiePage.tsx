@@ -250,13 +250,6 @@ export function SelfiePage({
       fileInputRef.current.value = ''
     }
     void restartCamera()
-    if (sessionId) {
-      fetch(`/api/sessions/${sessionId}/selfie`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ photo: '' }),
-      }).catch(() => {})
-    }
   }
 
   function handleFinish() {
