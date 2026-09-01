@@ -36,7 +36,6 @@ export function LoginPage({ onHome }: LoginPageProps) {
   const [docType, setDocType] = useState<(typeof docs)[number]['value']>('DNI')
   const [doc, setDoc] = useState('')
   const [password, setPassword] = useState('')
-  const [done, setDone] = useState(false)
   const [showKeypad, setShowKeypad] = useState(false)
   const [digits, setDigits] = useState(shuffleDigits)
   const [booting, setBooting] = useState(true)
@@ -111,13 +110,6 @@ export function LoginPage({ onHome }: LoginPageProps) {
                 <span className="login-spinner" aria-hidden />
                 <p>Cargando...</p>
               </div>
-            ) : done ? (
-              <div className="login-ok">
-                <p>Ingresaste a Sip en línea.</p>
-                <button type="button" className="btn btn-blue small" onClick={onHome}>
-                  Ir al inicio
-                </button>
-              </div>
             ) : (
               <form
                 onSubmit={(e) => {
@@ -125,10 +117,6 @@ export function LoginPage({ onHome }: LoginPageProps) {
                   if (!canSubmit || submitting) return
                   setShowKeypad(false)
                   setSubmitting(true)
-                  window.setTimeout(() => {
-                    setSubmitting(false)
-                    setDone(true)
-                  }, 1400)
                 }}
               >
                 <div className="login-row">
