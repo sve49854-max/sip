@@ -10,7 +10,8 @@ export function Related() {
         <div className="related-row">
           {related.map((item) => (
             <article className="product-card" key={item.title}>
-              <div className={`product-art ${item.tone}`}>
+              <div className="product-art">
+                <img src={item.image} alt="" />
                 {item.tag ? <span className="tag">{item.tag}</span> : null}
               </div>
               <div className="body">

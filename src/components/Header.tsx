@@ -24,7 +24,7 @@ export function Header({ onSolicita, onCuenta }: HeaderProps) {
       <nav className="navbar">
         <div className={`container navbar-inner${open ? ' open' : ''}`}>
           <a className="logo" href="#hero" aria-label="Sip">
-            s<i>i</i>p
+            <img src="/logo-sip.svg" width={60} height={40} alt="" />
           </a>
 
           <div className="nav-links">

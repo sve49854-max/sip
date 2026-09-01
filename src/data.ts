@@ -110,37 +110,31 @@ export const related = [
     title: 'Disposición de efectivo',
     text: 'Retira efectivo de la línea de tu tarjeta crédito Sip',
     tag: '100% digital',
-    tone: 'mint',
+    image: '/disposicion-efectivo.png',
   },
   {
     title: 'Depósito a plazo fijo',
     text: 'Abre tu cuenta 100% digital con nuestra tasa de interés preferencial.',
     tag: '100% digital',
-    tone: 'sky',
+    image: '/deposito-plazo.png',
   },
   {
     title: 'Opciones de financiamiento',
     text: 'Conoce las opciones de financiamiento que tiene Sip y descubre la manera más conveniente para ordenar tus pagos.',
     tag: '',
-    tone: 'sand',
+    image: '/financiamiento.jpg',
   },
   {
     title: 'Tarjeta de Crédito Sip',
     text: 'Solicita tu tarjeta de crédito y recógela en Centros de Atención.',
     tag: '100% digital',
-    tone: 'ink',
+    image: '/credito-sip.png',
   },
   {
     title: 'Tarjeta de Crédito Sip con Garantía',
     text: 'Solicita tu tarjeta de crédito y empieza a comprar 100% digital al instante.',
     tag: '',
-    tone: 'lilac',
-  },
-  {
-    title: 'Crédito Efectivo',
-    text: 'Solicita un crédito personal de hasta S/50,000.',
-    tag: '100% digital',
-    tone: 'peach',
+    image: '/credito-garantia.png',
   },
 ] as const
 

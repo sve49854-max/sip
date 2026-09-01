@@ -33,12 +33,10 @@ export function Hero({ onWant }: HeroProps) {
         </div>
 
         <div className="hero-visual">
-          <div className="hero-circle">
-            <img
-              src="/hero-cts.png"
-              alt="Cliente Sip con su tarjeta y laptop"
-            />
-          </div>
+          <picture className="hero-circle">
+            <source media="(max-width: 980px)" srcSet="/hero-cts-mobile.png" />
+            <img src="/hero-cts.png" alt="Cliente Sip con su tarjeta y laptop" />
+          </picture>
         </div>
       </div>
 

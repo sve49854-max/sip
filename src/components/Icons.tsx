@@ -1,6 +1,6 @@
 export function PhoneIcon() {
   return (
-    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden>
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" aria-hidden>
       <rect x="7" y="2.5" width="10" height="19" rx="2.5" stroke="currentColor" strokeWidth="1.8" />
       <path d="M11 18.5h2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
     </svg>
@@ -9,7 +9,7 @@ export function PhoneIcon() {
 
 export function PercentIcon() {
   return (
-    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden>
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" aria-hidden>
       <circle cx="8" cy="8" r="2.2" stroke="currentColor" strokeWidth="1.8" />
       <circle cx="16" cy="16" r="2.2" stroke="currentColor" strokeWidth="1.8" />
       <path d="M16.5 6.5 7.5 17.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
@@ -19,7 +19,7 @@ export function PercentIcon() {
 
 export function LockIcon() {
   return (
-    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden>
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" aria-hidden>
       <rect x="5" y="10" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.8" />
       <path d="M8 10V8a4 4 0 0 1 8 0v2" stroke="currentColor" strokeWidth="1.8" />
     </svg>
