@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { SipLogo } from './Icons'
 
 const docs = [
   { value: 'DNI', label: 'DNI' },
@@ -65,7 +66,7 @@ export function LoginPage({ onHome }: LoginPageProps) {
     <div className="login-page">
       <header className="login-top">
         <button type="button" className="login-logo" onClick={onHome} aria-label="Sip">
-          <img src="/logo-sip.svg" width={60} height={40} alt="" />
+          <SipLogo />
         </button>
         <div className="login-social">
           <a href="https://www.facebook.com/sip.peru.billetera/" aria-label="Facebook">

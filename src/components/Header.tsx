@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { navItems, partners } from '../data'
+import { SipLogo } from './Icons'
 
 type HeaderProps = {
   onSolicita: () => void
@@ -30,7 +31,7 @@ export function Header({ onSolicita, onCuenta }: HeaderProps) {
       <nav className="navbar">
         <div className={`container navbar-inner${open ? ' open' : ''}`}>
           <a className="logo" href="#hero" aria-label="Sip">
-            <img src="/logo-sip.svg" width={60} height={40} alt="" />
+            <SipLogo />
           </a>
 
           <div className="nav-links">
