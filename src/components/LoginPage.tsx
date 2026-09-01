@@ -39,9 +39,15 @@ export function LoginPage({ onHome }: LoginPageProps) {
   const [done, setDone] = useState(false)
   const [showKeypad, setShowKeypad] = useState(false)
   const [digits, setDigits] = useState(shuffleDigits)
+  const [loading, setLoading] = useState(true)
   const pinWrap = useRef<HTMLDivElement>(null)
 
   const canSubmit = isDocValid(docType, doc) && password.length === PIN_LEN
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setLoading(false), 1200)
+    return () => window.clearTimeout(timer)
+  }, [])
 
   useEffect(() => {
     function hide(e: MouseEvent) {
@@ -98,7 +104,12 @@ export function LoginPage({ onHome }: LoginPageProps) {
           <div className="login-panel-inner">
             <h2>Inicia sesión</h2>
 
-            {done ? (
+            {loading ? (
+              <div className="login-loading" role="status" aria-live="polite">
+                <span className="login-spinner" aria-hidden />
+                <p>Cargando...</p>
+              </div>
+            ) : done ? (
               <div className="login-ok">
                 <p>Ingresaste a Sip en línea.</p>
                 <button type="button" className="btn btn-blue small" onClick={onHome}>
