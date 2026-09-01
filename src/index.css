@@ -1365,7 +1365,7 @@ img {
 
 .selfie-stage {
   position: relative;
-  width: min(220px, 56vw);
+  width: min(240px, 62vw);
   aspect-ratio: 3 / 4;
   margin: 0 auto 28px;
   border-radius: 20px;
@@ -1388,17 +1388,17 @@ img {
   position: absolute;
   inset: 0;
   background: rgba(255, 255, 255, 0.72);
-  -webkit-mask-image: radial-gradient(ellipse 40% 48% at 50% 46%, transparent 98%, #000 100%);
-  mask-image: radial-gradient(ellipse 40% 48% at 50% 46%, transparent 98%, #000 100%);
+  -webkit-mask-image: radial-gradient(ellipse 34% 38% at 50% 50%, transparent 98%, #000 100%);
+  mask-image: radial-gradient(ellipse 34% 38% at 50% 50%, transparent 98%, #000 100%);
   pointer-events: none;
 }
 
 .selfie-oval {
   position: absolute;
   left: 50%;
-  top: 46%;
-  width: 80%;
-  height: 96%;
+  top: 50%;
+  width: 68%;
+  height: 76%;
   transform: translate(-50%, -50%);
   border: 3px solid var(--sip-blue);
   border-radius: 50%;
