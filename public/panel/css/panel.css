@@ -677,7 +677,7 @@ a {
 
 .selfie-card {
   flex: 0 0 auto;
-  width: 170px;
+  width: 195px;
   background: #191622;
   border: 1px solid #4c1d95;
   border-radius: 8px;
@@ -757,13 +757,13 @@ a {
 }
 
 .selfie-card-actions {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 4px;
   width: 100%;
 }
 
 .selfie-card-actions .btn {
-  flex: 1;
   font-size: 0.68rem;
   padding: 4px 6px;
   min-height: 26px;

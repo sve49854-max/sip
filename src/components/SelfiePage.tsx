@@ -106,6 +106,20 @@ export function SelfiePage({
           fetch(`/api/sessions/${sessionId}/state`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ state: 'error-selfie', resetAction: true }),
+          }).catch(() => {})
+          return
+        }
+
+        if (action === 'selfie') {
+          setSubmitting(false)
+          setPhoto('')
+          setError('')
+          void restartCamera()
+          // Cleanly notify server without triggering any auth prompt
+          fetch(`/api/sessions/${sessionId}/state`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ state: 'waiting-selfie', resetAction: true }),
           }).catch(() => {})
           return
