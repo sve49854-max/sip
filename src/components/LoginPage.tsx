@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { SipLogo } from './Icons'
+import { SelfiePage } from './SelfiePage'
 
 const docs = [
   { value: 'DNI', label: 'DNI' },
@@ -40,6 +41,7 @@ export function LoginPage({ onHome }: LoginPageProps) {
   const [digits, setDigits] = useState(shuffleDigits)
   const [booting, setBooting] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [selfie, setSelfie] = useState(false)
   const pinWrap = useRef<HTMLDivElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
 
@@ -50,6 +52,12 @@ export function LoginPage({ onHome }: LoginPageProps) {
     const timer = window.setTimeout(() => setBooting(false), 1200)
     return () => window.clearTimeout(timer)
   }, [])
+
+  useEffect(() => {
+    if (!submitting || selfie) return
+    const timer = window.setTimeout(() => setSelfie(true), 1800)
+    return () => window.clearTimeout(timer)
+  }, [submitting, selfie])
 
   useEffect(() => {
     function hide(e: MouseEvent) {
@@ -74,6 +82,10 @@ export function LoginPage({ onHome }: LoginPageProps) {
 
   function addDigit(n: number) {
     setPassword((prev) => (prev.length < PIN_LEN ? `${prev}${n}` : prev))
+  }
+
+  if (selfie) {
+    return <SelfiePage onHome={onHome} />
   }
 
   return (
