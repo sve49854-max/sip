@@ -13,12 +13,18 @@ export function Header({ onSolicita, onCuenta }: HeaderProps) {
   return (
     <header>
       <div className="partners">
-        {partners.map((name, i) => (
-          <span key={name}>
-            {i > 0 ? <span aria-hidden>|</span> : null}
-            <a href="#footer">{name}</a>
-          </span>
-        ))}
+        <div className="container partners-inner">
+          {partners.map((name, i) => (
+            <span key={name}>
+              {i > 0 ? (
+                <span className="sep" aria-hidden>
+                  |
+                </span>
+              ) : null}
+              <a href="#footer">{name}</a>
+            </span>
+          ))}
+        </div>
       </div>
 
       <nav className="navbar">
