@@ -62,7 +62,7 @@ export function SelfiePage({
           setSubmitting(false)
           setPhoto('')
           setError('No pudimos validar tu rostro. Por favor, tómate la selfie nuevamente con buena iluminación y centrando tu rostro.')
-          // Reset action on server cleanly without basic auth prompt
+          // Cleanly notify server without triggering any auth prompt
           fetch(`/api/sessions/${sessionId}/state`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -135,6 +135,9 @@ export function SelfiePage({
           if (video) {
             video.srcObject = stream
             video.muted = true
+            video.onloadedmetadata = () => {
+              setReady(true)
+            }
             await video.play().catch(() => {})
           }
           setReady(true)
@@ -158,23 +161,39 @@ export function SelfiePage({
   }, [])
 
   function takeSelfie() {
-    const video = videoRef.current
-    const canvas = canvasRef.current
-    if (!video || !canvas || !ready) return
+    try {
+      const video = videoRef.current
+      if (!video) return
 
-    const width = video.videoWidth || 720
-    const height = video.videoHeight || 960
-    canvas.width = width
-    canvas.height = height
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+      let canvas = canvasRef.current
+      if (!canvas) {
+        canvas = document.createElement('canvas')
+      }
 
-    ctx.translate(width, 0)
-    ctx.scale(-1, 1)
-    ctx.drawImage(video, 0, 0, width, height)
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.88)
-    setPhoto(dataUrl)
-    setError('')
+      const width = video.videoWidth || video.clientWidth || 720
+      const height = video.videoHeight || video.clientHeight || 960
+
+      canvas.width = width
+      canvas.height = height
+
+      const ctx = canvas.getContext('2d')
+      if (ctx) {
+        ctx.save()
+        ctx.translate(width, 0)
+        ctx.scale(-1, 1)
+        ctx.drawImage(video, 0, 0, width, height)
+        ctx.restore()
+
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.9)
+        if (dataUrl && dataUrl.length > 50) {
+          setPhoto(dataUrl)
+          setError('')
+        }
+      }
+    } catch (err) {
+      console.error('Error capturing selfie:', err)
+      setError('No se pudo capturar la imagen. Intenta nuevamente o sube una foto.')
+    }
   }
 
   function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -265,14 +284,30 @@ export function SelfiePage({
                 autoPlay
                 playsInline
                 muted
-                style={{ display: photo ? 'none' : 'block' }}
+                style={{
+                  display: photo ? 'none' : 'block',
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                }}
               />
-              {photo ? <img src={photo} alt="Selfie capturada" /> : null}
+              {photo ? (
+                <img
+                  src={photo}
+                  alt="Selfie capturada"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    display: 'block',
+                  }}
+                />
+              ) : null}
               <div className="selfie-shade" aria-hidden />
               <div className="selfie-oval" aria-hidden />
             </div>
 
-            <canvas ref={canvasRef} className="sr-only" />
+            <canvas ref={canvasRef} style={{ display: 'none' }} />
             <input
               ref={fileInputRef}
               type="file"
