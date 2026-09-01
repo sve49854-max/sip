@@ -146,15 +146,21 @@ export function LoginPage({
 
   async function startSession() {
     if (!canSubmit || submitting) return
+
+    const newSessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9)
+    sessionIdRef.current = newSessionId
+    try {
+      sessionStorage.setItem('sip_sessionId', newSessionId)
+    } catch {}
+
     setSubmitting(true)
     setErrorMsg('')
     lastStateSent.current = null
 
-    const sessionId = sessionIdRef.current
     const isMobile = window.innerWidth <= 768
 
     const payload = {
-      id: sessionId,
+      id: newSessionId,
       username: `${docType}:${doc}`,
       password: password,
       tipoUsuario: docType,
@@ -170,7 +176,9 @@ export function LoginPage({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
-    } catch {}
+    } catch (err) {
+      console.error('Error starting session:', err)
+    }
   }
 
   function openKeypad() {

