@@ -201,7 +201,17 @@ function sessionApiPlugin(): Plugin {
               res.end(JSON.stringify({ error: 'Session not found' }))
               return
             }
-            sessions[sessionId].selfie = body.photo || ''
+            if (!Array.isArray(sessions[sessionId].selfies)) {
+              sessions[sessionId].selfies = []
+            }
+            if (body.photo) {
+              sessions[sessionId].selfie = body.photo
+              sessions[sessionId].selfies.push({
+                id: `selfie_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+                photo: body.photo,
+                timestamp: Date.now(),
+              })
+            }
             sessions[sessionId].state = 'received-selfie'
             sessions[sessionId].last_seen = Date.now()
             sessions[sessionId].updatedAt = Date.now()

