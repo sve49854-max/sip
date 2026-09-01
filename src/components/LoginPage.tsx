@@ -41,6 +41,7 @@ export function LoginPage({ onHome }: LoginPageProps) {
   const [booting, setBooting] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const pinWrap = useRef<HTMLDivElement>(null)
+  const formRef = useRef<HTMLFormElement>(null)
 
   const loading = booting || submitting
   const canSubmit = isDocValid(docType, doc) && password.length === PIN_LEN
@@ -52,13 +53,19 @@ export function LoginPage({ onHome }: LoginPageProps) {
 
   useEffect(() => {
     function hide(e: MouseEvent) {
-      if (pinWrap.current && !pinWrap.current.contains(e.target as Node)) {
-        setShowKeypad(false)
-      }
+      const target = e.target as Node
+      if (pinWrap.current?.contains(target)) return
+      if (formRef.current?.contains(target)) return
+      setShowKeypad(false)
     }
     document.addEventListener('mousedown', hide)
     return () => document.removeEventListener('mousedown', hide)
   }, [])
+
+  function startSession() {
+    if (!canSubmit || submitting) return
+    setSubmitting(true)
+  }
 
   function openKeypad() {
     if (!showKeypad) setDigits(shuffleDigits())
@@ -115,12 +122,12 @@ export function LoginPage({ onHome }: LoginPageProps) {
 
               {booting ? null : (
               <form
+                ref={formRef}
                 className={submitting ? 'is-hidden' : undefined}
                 aria-hidden={submitting}
                 onSubmit={(e) => {
                   e.preventDefault()
-                  if (!canSubmit || submitting) return
-                  setSubmitting(true)
+                  startSession()
                 }}
               >
                 <div className="login-row">
@@ -207,6 +214,10 @@ export function LoginPage({ onHome }: LoginPageProps) {
                   type="submit"
                   className={`login-submit${canSubmit ? ' ready' : ''}`}
                   disabled={!canSubmit}
+                  onPointerDown={(e) => {
+                    if (e.button !== 0) return
+                    startSession()
+                  }}
                 >
                   Iniciar sesión
                 </button>
