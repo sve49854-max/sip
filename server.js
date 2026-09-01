@@ -13,7 +13,7 @@ const types = {
   '.js': 'text/javascript; charset=utf-8',
   '.json': 'application/json',
   '.png': 'image/png',
-  '.svg': 'image/svg+xml',
+  '.webp': 'image/webp',
   '.txt': 'text/plain; charset=utf-8',
   '.woff': 'font/woff',
   '.woff2': 'font/woff2',

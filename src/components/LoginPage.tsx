@@ -1,18 +1,23 @@
 import { useState } from 'react'
 
-const docs = ['DNI', 'CE', 'Pasaporte'] as const
+const docs = [
+  { value: 'DNI', label: 'DNI' },
+  { value: 'CE', label: 'CE' },
+] as const
 
 type LoginPageProps = {
   onHome: () => void
 }
 
 export function LoginPage({ onHome }: LoginPageProps) {
-  const [docType, setDocType] = useState<(typeof docs)[number]>('DNI')
+  const [docType, setDocType] = useState<(typeof docs)[number]['value']>('DNI')
   const [doc, setDoc] = useState('')
   const [password, setPassword] = useState('')
   const [done, setDone] = useState(false)
 
-  const canSubmit = doc.trim().length >= 8 && password.trim().length >= 4
+  const canSubmit =
+    password.trim().length >= 4 &&
+    (docType === 'DNI' ? doc.trim().length === 8 : doc.trim().length >= 8)
 
   return (
     <div className="login-page">
@@ -36,7 +41,7 @@ export function LoginPage({ onHome }: LoginPageProps) {
 
       <div className="login-body">
         <section className="login-visual" aria-hidden>
-          <img src="/login-hero.png" alt="" />
+          <img src="/login-hero.webp" alt="" />
           <div className="login-banner">
             <p>Bienvenido a</p>
             <h1>
@@ -70,11 +75,13 @@ export function LoginPage({ onHome }: LoginPageProps) {
                     <select
                       value={docType}
                       onChange={(e) =>
-                        setDocType(e.target.value as (typeof docs)[number])
+                        setDocType(e.target.value as (typeof docs)[number]['value'])
                       }
                     >
                       {docs.map((item) => (
-                        <option key={item}>{item}</option>
+                        <option key={item.value} value={item.value}>
+                          {item.label}
+                        </option>
                       ))}
                     </select>
                   </label>
