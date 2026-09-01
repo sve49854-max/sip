@@ -1405,22 +1405,39 @@ img {
   pointer-events: none;
 }
 
-.selfie-error {
-  margin: 0 0 16px;
-  color: #c62828;
+.selfie-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  max-width: 360px;
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
+}
+
+.selfie-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+  gap: 12px;
 }
 
 .selfie-body .login-submit,
 .selfie-body .login-outline,
-.selfie-actions {
-  width: min(320px, 92vw);
-}
-
-.selfie-actions {
-  display: grid;
-  gap: 10px;
+.selfie-actions .login-submit,
+.selfie-actions .login-outline {
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 /* Login Error Alert */

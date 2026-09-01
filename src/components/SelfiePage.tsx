@@ -309,7 +309,7 @@ export function SelfiePage({
         ) : null}
 
         {/* Camera and Capture Stage (always kept mounted in DOM so stream never dies) */}
-        <div style={{ display: submitting ? 'none' : 'block' }}>
+        <div className="selfie-container" style={{ display: submitting ? 'none' : 'flex' }}>
           <h2>Validación facial</h2>
           <p className="selfie-copy">
             Esta validación nos ayudará a realizar la verificación facial cuando detectemos que
