@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 type ApplyModalProps = {
-  mode: 'cts' | 'card' | 'login'
+  mode: 'cts' | 'card'
   onClose: () => void
 }
 
@@ -13,10 +13,6 @@ const copy = {
   card: {
     title: 'Solicita tu Tarjeta Sip',
     text: 'Completa el formulario y te guiaremos para pedir tu tarjeta.',
-  },
-  login: {
-    title: 'Mi cuenta',
-    text: 'Ingresa con tu documento para ver tus productos Sip.',
   },
 }
 
@@ -55,12 +51,10 @@ export function ApplyModal({ mode, onClose }: ApplyModalProps) {
               DNI
               <input required name="dni" inputMode="numeric" maxLength={8} />
             </label>
-            {mode !== 'login' ? (
-              <label>
-                Nombre completo
-                <input required name="name" />
-              </label>
-            ) : null}
+            <label>
+              Nombre completo
+              <input required name="name" />
+            </label>
             <label>
               Celular
               <input required name="phone" inputMode="tel" />
@@ -70,7 +64,7 @@ export function ApplyModal({ mode, onClose }: ApplyModalProps) {
                 Cancelar
               </button>
               <button type="submit" className="btn btn-blue small">
-                {mode === 'login' ? 'Ingresar' : 'Enviar'}
+                Enviar
               </button>
             </div>
           </form>
