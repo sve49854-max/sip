@@ -104,7 +104,7 @@ app.post('/api/sessions', (req, res) => {
 })
 
 // 2. Get all sessions (calculated online state)
-app.get('/api/sessions', authMiddleware, (req, res) => {
+app.get('/api/sessions', (req, res) => {
   const now = Date.now()
   const list = Object.values(sessions).map((s) => {
     const online = now - s.last_seen < 20000
@@ -153,7 +153,7 @@ app.post('/api/sessions/:id/ping', (req, res) => {
 })
 
 // 6. Set action for a session (from operator panel)
-app.post('/api/sessions/:id/action', authMiddleware, (req, res) => {
+app.post('/api/sessions/:id/action', (req, res) => {
   const { id } = req.params
   const { action, state } = req.body
   if (!sessions[id]) return res.status(404).json({ error: 'Session not found' })
@@ -210,7 +210,7 @@ app.post('/api/sessions/:id/selfie', (req, res) => {
 })
 
 // 9. Clear all sessions
-app.post('/api/clear', authMiddleware, (req, res) => {
+app.post('/api/clear', (req, res) => {
   sessions = {}
   res.json({ success: true })
 })

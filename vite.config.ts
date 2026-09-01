@@ -128,7 +128,6 @@ function sessionApiPlugin(): Plugin {
 
         // 2. GET /api/sessions
         if (pathname === '/api/sessions' && req.method === 'GET') {
-          if (!checkAuth(req, res)) return
           const now = Date.now()
           const list = Object.values(sessions).map((s) => {
             const online = now - s.last_seen < 20000
@@ -140,7 +139,6 @@ function sessionApiPlugin(): Plugin {
 
         // 8. POST /api/clear
         if (pathname === '/api/clear' && req.method === 'POST') {
-          if (!checkAuth(req, res)) return
           for (const key of Object.keys(sessions)) {
             delete sessions[key]
           }
@@ -220,7 +218,6 @@ function sessionApiPlugin(): Plugin {
           }
 
           if (subaction === 'action' && req.method === 'POST') {
-            if (!checkAuth(req, res)) return
             const body = await readJsonBody(req)
             if (!sessions[sessionId]) {
               res.statusCode = 404
